@@ -1,0 +1,3 @@
+variable(bldSubDebug)
+function(bldSubInit)
+function(bldSubProcess)
