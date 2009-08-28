@@ -17,8 +17,10 @@ public:
     virtual int bldStart() = 0;
     virtual int bldStop()  = 0;
     virtual bool IsStarted() const  = 0;
-    virtual int bldConfig( const char* sAddr, unsigned short uPort, unsigned int uMaxDataSize,  
-      const char* sInterfaceIp, const char* sBldPvTrigger, const char* sBldPvList )  = 0;
+    virtual int bldConfig( const char* sAddr, unsigned short uPort, 
+      unsigned int uMaxDataSize, const char* sInterfaceIp, 
+      unsigned int uSrcPyhsicalId, unsigned int uDataType, const char* sBldPvTrigger, 
+      const char* sBldPvFiducial, const char* sBldPvList )  = 0;
     virtual void bldShowConfig()  = 0;
 
     // To be called by the init function of subroutine record
@@ -80,8 +82,8 @@ int BldStart();
 int BldStop();
 bool BldIsStarted();
 
-int BldConfig( const char* sAddr, unsigned short uPort, unsigned int uMaxDataSize,  
-      const char* sInterfaceIp, const char* sBldPvTrigger, const char* sBldPvList );
+int BldConfig( const char* sAddr, unsigned short uPort, unsigned int uMaxDataSize, const char* sInterfaceIp, 
+  unsigned int uSrcPyhsicalId, unsigned int uDataType, const char* sBldPvTrigger, const char* sBldPvFiducial, const char* sBldPvList );
 void BldShowConfig();
 
 int BldSetSub( const char* sBldSubRec ); 

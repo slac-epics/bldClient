@@ -8,13 +8,12 @@ include $(TOP)/configure/CONFIG
 #=============================
 # build an ioc application
 
-PROD_IOC = bldClient
+PROD_IOC += bldClient
 
-#DBD += bldClient.dbd
+#DBD += bldClientApp.dbd
 
 # bldClient.dbd will be made up from these files:
-#bldClient_DBD += base.dbd
-#bldClient_DBD += bldSub.dbd
+#bldClientApp_DBD += base.dbd
 #include definitions for any other support applications needed
 
 # <name>_registerRecordDeviceDriver.cpp will be created from <name>.dbd
@@ -29,9 +28,9 @@ bldClient_OBJS_vxWorks += $(EPICS_BASE_BIN)/vxComLibrary
 
 #add a definition for each support application used by this application
 #bldClient_LIBS_RTEMS += foo
+bldClient_LIBS += bldClient
 bldClient_LIBS_Linux += $(EPICS_BASE_IOC_LIBS)
 
-bldClient_LIBS += libBldClient
 
 #===========================
 

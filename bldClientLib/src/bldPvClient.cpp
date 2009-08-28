@@ -18,6 +18,7 @@
 #include "bldPvClient.h"
 #include "bldNetworkClient.h"
 #include "bldClientSub.h"
+#include "bldPacket.h"
 
 /*
  * Global C function definitions
@@ -48,11 +49,13 @@ bool BldIsStarted()
     return EpicsBld::BldPvClientFactory::getSingletonBldPvClient().IsStarted();
 }
 
-int BldConfig( const char* sAddr, unsigned short uPort, unsigned int uMaxDataSize,  
-      const char* sInterfaceIp, const char* sBldPvTrigger, const char* sBldPvList )
+int BldConfig( const char* sAddr, unsigned short uPort, 
+  unsigned int uMaxDataSize, const char* sInterfaceIp, unsigned int uSrcPyhsicalId, 
+  unsigned int uDataType, const char* sBldPvTrigger, 
+  const char* sBldPvFiducial, const char* sBldPvList )
 {
     return EpicsBld::BldPvClientFactory::getSingletonBldPvClient().bldConfig(
-      sAddr, uPort, uMaxDataSize, sInterfaceIp, sBldPvTrigger, sBldPvList);
+      sAddr, uPort, uMaxDataSize, sInterfaceIp, uSrcPyhsicalId, uDataType, sBldPvTrigger, sBldPvFiducial, sBldPvList);
 }
 
 void BldShowConfig()
@@ -102,10 +105,12 @@ public:
     virtual int bldStart();
     virtual int bldStop();
     virtual bool IsStarted() const;
-    virtual int bldConfig( const char* sAddr, unsigned short uPort, unsigned int uMaxDataSize,  
-      const char* sInterfaceIp, const char* sBldPvTrigger, const char* sBldPvList );
+    virtual int bldConfig( const char* sAddr, unsigned short uPort,
+      unsigned int uMaxDataSize, const char* sInterfaceIp, 
+      unsigned int uSrcPyhsicalId, unsigned int uDataType, const char* sBldPvTrigger,     
+      const char* sBldPvFiducial, const char* sBldPvList );
     virtual void bldShowConfig();
-    
+
     // To be called by the init function of subroutine record
     virtual int bldSetSub( const char* sBldSubRec ); 
 
@@ -128,7 +133,9 @@ private:
     unsigned short  _uBldServerPort;
     unsigned int    _uMaxDataSize;
     string          _sBldInterfaceIp;    
-    string          _sBldPvTrigger, _sBldPvList, _sBldPvTriggerPrevFLNK;
+    unsigned int    _uSrcPyhsicalId, _uDataType;
+    string          _sBldPvTrigger, _sBldPvFiducial;
+    string          _sBldPvList, _sBldPvTriggerPrevFLNK;
     
      BldPvClientBasic(); /// Singelton. No explicit instantiation
      ~BldPvClientBasic();
@@ -194,7 +201,7 @@ BldPvClientBasic& BldPvClientBasic::getSingletonObject()
 /* public member functions */
 
 BldPvClientBasic::BldPvClientBasic() : _bBldStarted(false), _iDebugLevel(0),
-  _uBldServerAddr(0), _uBldServerPort(0), _uMaxDataSize(0)
+  _uBldServerAddr(0), _uBldServerPort(0), _uMaxDataSize(0), _uSrcPyhsicalId(0), _uDataType(0)
 {
 }
 
@@ -382,21 +389,51 @@ try
     short int iFieldType = 0;
     long lNumElements = 0;
 
-    /* Read Bld PvList */
-    
     std::vector<string> vsBldPv;
     _splitPvList( _sBldPvList, vsBldPv );
 
     static long llBufPvVal[iMTU / sizeof(long)] = {0}; // Align with long int boundaries
     static char lcMsgBuffer[iMTU] = {0};
     
-    char* pcMsgBuffer = lcMsgBuffer;
-    int iMaxMsgSize = sizeof(lcMsgBuffer)-1;
-    unsigned int uDataSize = 0;
+    BldPacketHeader* pBldPacketHeader = (BldPacketHeader*) lcMsgBuffer;
     
-    for ( std::vector<string>::const_iterator itsBldPv = vsBldPv.begin();
-      itsBldPv != vsBldPv.end(); itsBldPv++ )
+    /* Set bld packet header */    
+    struct timespec ts;
+    int iStatus = clock_gettime (CLOCK_REALTIME, &ts);
+    if (iStatus)
+        throw string( "clock_gettime() Failed\n" );
+    
+    unsigned int uFiducialId = 0;
+    if ( _sBldPvFiducial.length() > 0 )
     {
+        if ( 
+          readPv( _sBldPvFiducial.c_str(), sizeof(llBufPvVal), llBufPvVal, &iFieldType, &lNumElements )
+          != 0 )
+            throw string("read Fiducial Pv (") + _sBldPvFiducial + ") Failed\n";
+                
+        uFiducialId  = *(unsigned long int*) llBufPvVal;
+    }
+    
+    const unsigned int uDamage = 0;
+    
+    new ( pBldPacketHeader ) BldPacketHeader( sizeof(lcMsgBuffer), 
+      ts.tv_sec, ts.tv_nsec, uFiducialId, uDamage, _uSrcPyhsicalId, _uDataType);
+    //char* pcMsgBuffer = (char*) (pBldPacketHeader + 1);
+    //unsigned int uDataSize = sizeof(BldPacketHeader);
+    //const int iMaxMsgSize = sizeof(lcMsgBuffer);
+
+    /* Set bld pv values */        
+    int iPvIndex = 0;
+    for ( std::vector<string>::const_iterator itsBldPv = vsBldPv.begin();
+      itsBldPv != vsBldPv.end(); itsBldPv++, iPvIndex++ )
+    {
+        //// print out the separator "; " 
+        //if ( itsBldPv != vsBldPv.begin() )
+        //{
+        //    *pcMsgBuffer++ = ';'; *pcMsgBuffer++ = ' ';            
+        //    uDataSize += 2;
+        //}
+        
         const string& sBldPv = *itsBldPv;
         if ( _iDebugLevel > 2 )
             printf( "Reading PV %s...\n", sBldPv.c_str());
@@ -405,28 +442,32 @@ try
           != 0 )
             throw string("readPv(") + sBldPv + ") Failed\n";
         
-        if ( _iDebugLevel > 2)
-            printf( "Msg Buffer before PV %s AvaSize %d: %s\n", sBldPv.c_str(), iMaxMsgSize, lcMsgBuffer);
-            
-        int iNewMsgSize = 0;
-        if (
-          sprintPv( sBldPv.c_str(), llBufPvVal, iMaxMsgSize, pcMsgBuffer, 
-          &iNewMsgSize, iFieldType, lNumElements )
-          != 0 )
-            throw string("sprintPv(") + sBldPv + ") Failed\n";
-                
-        pcMsgBuffer += iNewMsgSize;
-        uDataSize += iNewMsgSize;
-        iMaxMsgSize -= iNewMsgSize;
+        //if ( _iDebugLevel > 2)
+        //    printf( "Msg Buffer before PV %s Available Size %d: %s\n", sBldPv.c_str(), iMaxMsgSize - uDataSize, lcMsgBuffer);
         
-        if ( _iDebugLevel > 2 )
-            printf( "Msg Buffer after PV %s AvaSize %d: %s\n", sBldPv.c_str(), iMaxMsgSize, lcMsgBuffer);        
+        int iFail = pBldPacketHeader->setPvValue( iPvIndex, llBufPvVal );
+        if ( iFail != 0 )
+            throw string("pBldPacketHeader->setPvValue() for PV ") + sBldPv + ") Failed\n";
+        
+        //int iNewMsgSize = 0;
+        //if (
+        //  sprintPv( sBldPv.c_str(), llBufPvVal, iMaxMsgSize - uDataSize, pcMsgBuffer, 
+        //  &iNewMsgSize, iFieldType, lNumElements )
+        //  != 0 )
+        //    throw string("sprintPv(") + sBldPv + ") Failed\n";
+        //        
+        //pcMsgBuffer += iNewMsgSize;
+        //uDataSize += iNewMsgSize;
+        
+        //if ( _iDebugLevel > 2 )
+        //    printf( "Msg Buffer after PV %s AvaSize %d: %s\n", sBldPv.c_str(), iMaxMsgSize - uDataSize, lcMsgBuffer);        
     }
     
-    if ( uDataSize > _uMaxDataSize )
-        throw string("Data Size is larger than max value\n");
-    
-    int iFailSend = _apBldNetworkClient->sendRawData(strlen(lcMsgBuffer), lcMsgBuffer);
+    //if ( uDataSize > _uMaxDataSize )
+    //    throw string("Data Size is larger than max value\n");
+                
+    /* Send out bld */    
+    int iFailSend = _apBldNetworkClient->sendRawData( pBldPacketHeader->getPackSize(), lcMsgBuffer);
     if ( iFailSend != 0 )
         throw string( "_apBldNetworkClient->sendRawData() Failed\n", _sBldPvList.c_str() );
 }
@@ -445,8 +486,9 @@ bool BldPvClientBasic::IsStarted() const
     return _bBldStarted;
 }
 
-int BldPvClientBasic::bldConfig( const char* sAddr, unsigned short uPort, unsigned int uMaxDataSize,  
-  const char* sInterfaceIp, const char* sBldPvTrigger, const char* sBldPvList )
+int BldPvClientBasic::bldConfig( const char* sAddr, unsigned short uPort, 
+  unsigned int uMaxDataSize, const char* sInterfaceIp, unsigned int uSrcPyhsicalId, unsigned int uDataType, 
+  const char* sBldPvTrigger, const char* sBldPvFiducial, const char* sBldPvList )
 {   
     if ( _bBldStarted )
     {
@@ -468,7 +510,10 @@ int BldPvClientBasic::bldConfig( const char* sAddr, unsigned short uPort, unsign
     _uBldServerPort = uPort;    
     _uMaxDataSize = uMaxDataSize;
     _sBldInterfaceIp.assign(sInterfaceIp == NULL? "" : sInterfaceIp);  
+    _uSrcPyhsicalId = uSrcPyhsicalId;
+    _uDataType = uDataType;
     _sBldPvTrigger.assign(sBldPvTrigger);
+    _sBldPvFiducial.assign(sBldPvFiducial); 
     _sBldPvList.assign(sBldPvList);
                       
     bldShowConfig();
@@ -478,12 +523,16 @@ int BldPvClientBasic::bldConfig( const char* sAddr, unsigned short uPort, unsign
 
 void BldPvClientBasic::bldShowConfig()
 {
+    unsigned int uServerNetworkAddr = htonl(_uBldServerAddr);
+    unsigned char* pcAddr = (unsigned char*) &uServerNetworkAddr;
     printf( "  Configurable parameters:\n"
-      "    Server Addr %x  Port %d  MaxDataSize %u\n"
-      "    MCastIF %s  PvTrigger <%s>\n"
+      "    Server Addr %u.%u.%u.%u  Port %d  MaxDataSize %u MCastIF %s\n"
+      "    Source Id %d  Data Type %d\n"
+      "    PvTrigger <%s>  PvFiducial <%s>\n"
       "    PvList <%s>\n",
-      _uBldServerAddr, _uBldServerPort, _uMaxDataSize, _sBldInterfaceIp.c_str(), 
-      _sBldPvTrigger.c_str(), _sBldPvList.c_str() );
+      pcAddr[0], pcAddr[1], pcAddr[2], pcAddr[3],
+      _uBldServerPort, _uMaxDataSize, _sBldInterfaceIp.c_str(), 
+      _uSrcPyhsicalId, _uDataType, _sBldPvTrigger.c_str(), _sBldPvFiducial.c_str(), _sBldPvList.c_str() );
             
     printf( "  Internal Settings:\n"
       "    Subroutine Record <%s>  PvTrigger.FLNK <%s>\n"
@@ -629,7 +678,7 @@ int BldPvClientBasic::sprintPv(const char *sVariableName, void* pBuffer,
     
     char*const pMsgBufferLimit = lcMsgBuffer + iMsgBufferSize;
     
-    int iCharsPrinted = sprintf( lcMsgBuffer, "%s = ", sVariableName );
+    int iCharsPrinted = sprintf( lcMsgBuffer, "%s ", sVariableName );
     char* pcMsgBufferFrom = lcMsgBuffer + iCharsPrinted;    
     long lElement = 0;
     
@@ -645,7 +694,7 @@ int BldPvClientBasic::sprintPv(const char *sVariableName, void* pBuffer,
         if (lNumElements > 1)
         {
             if ( lElement == 0 )
-                sprintf( pcMsgBufferFrom, "Array[%ld]: [0] ", lNumElements);
+                sprintf( pcMsgBufferFrom, "Array[%ld] [0] ", lNumElements);
             else
                 sprintf( pcMsgBufferFrom, ", [%ld] ", lElement );
         }
@@ -654,33 +703,33 @@ int BldPvClientBasic::sprintPv(const char *sVariableName, void* pBuffer,
         switch (iValueType)
         {
         case DBR_STRING:
-            sprintf( pcMsgBufferFrom, "(String) %s", pcBufferFrom );
+            sprintf( pcMsgBufferFrom, "(string) = %s", pcBufferFrom );
             pcBufferFrom += strlen( pcBufferFrom ) + 1;
             break;
         //case DBR_INT: // the same as DBR_SHORT, as defeind in <dbAccess.h>
         case DBR_SHORT:
-            sprintf( pcMsgBufferFrom, "(short) %d", *(short*) pcBufferFrom );
+            sprintf( pcMsgBufferFrom, "(short) = %d", *(short int*) pcBufferFrom );
             pcBufferFrom += sizeof(short);
             break;
         case DBR_FLOAT:
-            sprintf( pcMsgBufferFrom, "(float) %f", *(float*) pcBufferFrom );
+            sprintf( pcMsgBufferFrom, "(float) = %f", *(float*) pcBufferFrom );
             pcBufferFrom += sizeof(float);
             break;
         case DBR_ENUM:
-            sprintf( pcMsgBufferFrom, "(enum) %s", pcBufferFrom );
+            sprintf( pcMsgBufferFrom, "(enum) = %s", pcBufferFrom );
             pcBufferFrom += strlen( pcBufferFrom ) + 1;
             break;
         case DBR_CHAR:
-            sprintf( pcMsgBufferFrom, "(char) %c (%d)", *pcBufferFrom, *pcBufferFrom );
+            sprintf( pcMsgBufferFrom, "(char) = %c", *pcBufferFrom );
             pcBufferFrom += sizeof(char);
             break;
         case DBR_LONG:
-            sprintf( pcMsgBufferFrom, "(long) %ld", *(long*) pcBufferFrom );
+            sprintf( pcMsgBufferFrom, "(long) = %ld", *(long int*) pcBufferFrom );
             pcBufferFrom += sizeof(long);
             break;
         default:
         case DBR_DOUBLE:
-            sprintf( pcMsgBufferFrom, "(double) %lf", *(double*) pcBufferFrom );
+            sprintf( pcMsgBufferFrom, "(double) = %lf", *(double*) pcBufferFrom );
             pcBufferFrom += sizeof(double);
             break;      
         }

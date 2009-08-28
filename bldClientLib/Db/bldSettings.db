@@ -1,4 +1,4 @@
-record(sub,"$(IOC_PREFIX):bldTrigger")
+record(sub,"$(IOC):bldTrigger")
 {
     field(DESC, "Bld Client Trigger")
     field(INAM,"bldSubInit")

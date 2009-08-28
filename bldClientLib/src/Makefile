@@ -14,21 +14,23 @@ include $(TOP)/configure/CONFIG
 # several facilities (evr, micro, ...) for this to work.
 #BUILDFOR=_RTEMS
 
-LIBRARY		= libBldClient
-INC			= bldNetworkClient.h bldPvClient.h
+LIBRARY_IOC	+= bldClient
+INC			+= bldNetworkClient.h bldPvClient.h
 
 
-#DBD                = foo.dbd
+#DBD        = foo.dbd
 DBD			+= bldClient.dbd
 
-#multicastBLDApp_DBD   = base.dbd
-#multicastBLDApp_DBD  += multicastBLDSupport.dbd
-bldClient_DBD += bldSub.dbd
+#bldClient_DBD		+= base.dbd
+bldClient_DBD		+= bldSub.dbd
+bldClient_DBD		+= bldIocShCmds.dbd
 
-libBldClient_SRCS       = bldNetworkClient.cpp 
-libBldClient_SRCS       += bldPvClient.cpp
-libBldClient_SRCS       += bldClientSub.cpp
-libBldClient_SRCS		+= bldClient_registerRecordDeviceDriver.cpp
+bldClient_SRCS      += bldNetworkClient.cpp 
+bldClient_SRCS      += bldPvClient.cpp
+bldClient_SRCS      += bldClientSub.cpp
+bldClient_SRCS      += bldIocShCmds.cpp
+bldClient_SRCS      += bldPacket.cpp
+bldClient_SRCS	    += bldClient_registerRecordDeviceDriver.cpp
 
 #multicastBLDApp_LIBS += $(EPICS_BASE_IOC_LIBS)
 
