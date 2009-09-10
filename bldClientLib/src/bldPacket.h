@@ -23,14 +23,14 @@ public:
     uint32_t uLogicalId;
     uint32_t uPhysicalId;
     uint32_t uDataType;
-    uint32_t uPacketSize;
+    uint32_t uExtentSize;
 
     // Xtc Section 2
     uint32_t uDamage2;
     uint32_t uLogicalId2;
     uint32_t uPhysicalId2;
     uint32_t uDataType2;
-    uint32_t uPacketSize2;
+    uint32_t uExtentSize2;
     
     /*
      * Enums imported from PDS repository
@@ -81,23 +81,23 @@ public:
                 (unsigned long) uPhysicalId1 );
                 
             uDamage = setu32LE(uDamgeTrue);
-            uPacketSize = 0;
+            uExtentSize = 0;
             return;
         }
-
-        unsigned int uPacketSize1 = sizeof(BldPacketHeader) + liBldPacketSizeByBldType[uPhysicalId1];
+       
+        unsigned int uExtentSize1 = sizeof(BldPacketHeader) - 10 * sizeof(uint32_t) + liBldPacketSizeByBldType[uPhysicalId1];
             
-        if ( uPacketSize1 > uMaxPacketSize )
+        if ( uExtentSize1 > uMaxPacketSize )
         {
             printf( "BldPacketHeader::BldPacketHeader() Packet size (%u) is larger than given buffer size (%u) \n",
-                (unsigned int) uPacketSize1, uMaxPacketSize );
+                (unsigned int) uExtentSize1, uMaxPacketSize );
                 
             uDamage = setu32LE(uDamgeTrue);
-            uPacketSize = 0;
+            uExtentSize = 0;
             return;
         }
         
-        uPacketSize = setu32LE(uPacketSize1);
+        uExtentSize = setu32LE(uExtentSize1);
         
         if ( (int) uDataType1 != ltXtcDataTypeByBldType[uPhysicalId1] )
         {
@@ -106,7 +106,7 @@ public:
                 (unsigned long) uDataType1, (unsigned long) uPhysicalId1, ltXtcDataTypeByBldType[uPhysicalId1] );
                 
             uDamage = setu32LE(uDamgeTrue);
-            uPacketSize = 0;
+            uExtentSize = 0;
         }
         
         // Mirror Xtc Section 1 to Section 2
@@ -114,10 +114,10 @@ public:
         uLogicalId2 = uLogicalId;
         uPhysicalId2 = uPhysicalId;
         uDataType2 = uDataType;
-        uPacketSize2 = uPacketSize;        
+        uExtentSize2 = uExtentSize;        
     }        
     
-    unsigned int getPackSize() { return (unsigned int)  setu32LE(uPacketSize); }
+    unsigned int getPacketSize() { return (unsigned int)  setu32LE(uExtentSize) + 10 * sizeof(uint32_t); }
     int setPvValue( int iPvIndex, void* pPvValue );
     
 private:    

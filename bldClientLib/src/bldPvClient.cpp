@@ -150,7 +150,7 @@ private:
     static const int iMTU; // Ethernet packet MTU
     static const char sPvListSeparators[];
 
-    int _splitPvList( const string& sBldPvList, std::vector<string>& vsBldPv );
+    static int _splitPvList( const string& sBldPvList, std::vector<string>& vsBldPv );
     
     /* PV access and report */    
     static int readPv(const char *sVariableName, int iBufferSize, void* pBuffer, 
@@ -467,7 +467,7 @@ try
     //    throw string("Data Size is larger than max value\n");
                 
     /* Send out bld */    
-    int iFailSend = _apBldNetworkClient->sendRawData( pBldPacketHeader->getPackSize(), lcMsgBuffer);
+    int iFailSend = _apBldNetworkClient->sendRawData( pBldPacketHeader->getPacketSize(), lcMsgBuffer);
     if ( iFailSend != 0 )
         throw string( "_apBldNetworkClient->sendRawData() Failed\n", _sBldPvList.c_str() );
 }
