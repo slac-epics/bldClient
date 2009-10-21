@@ -12,7 +12,7 @@ namespace EpicsBld
 const int BldPacketHeader::liBldPacketSizeByBldType[] = 
 { 
     0, 
-    0, 
+    sizeof(double)*4, 
     sizeof(double)*4 
 };
 

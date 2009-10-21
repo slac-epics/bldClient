@@ -37,7 +37,10 @@ public:
      */
      
     // Imported from PDS repository: pdsdata/xtc/BldInfo.hh : BldInfo::Type
-    enum BldTypeId { EBeam, PhaseCavity, FEEGasDetEnergy, NumberOfBldTypeId };
+    enum BldTypeId { EBeam, PhaseCavity, FEEGasDetEnergy, NumberOfBldTypeId }; 
+    /*
+       EBeam bld does not use this module
+     */
     
     // Imported from PDS repository: pdsdata/xtc/TypeId.hh : TypId::Type
     enum XtcDataType {
