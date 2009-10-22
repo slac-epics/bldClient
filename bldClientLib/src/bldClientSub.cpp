@@ -19,36 +19,62 @@
 extern "C"
 {
 
-int bldSubDebug = 0;
+int bldPreSubDebug = 0;
+int bldPostSubDebug = 0;
 
 typedef long (*TFuncProcess)(subRecord *pSubrecord);
 
-static long bldSubInit(subRecord *pSubrecord,TFuncProcess process)
+static long bldPreSubInit(subRecord *pSubrecord,TFuncProcess process)
 {
-    if (bldSubDebug)
-        printf("bldSubInit() : Record %s called bldSubInit(%p, %p)\n",
+    if (bldPreSubDebug)
+        printf("bldPreSubInit() : Record %s called bldPreSubInit(%p, %p)\n",
           pSubrecord->name, (void*) pSubrecord, (void*) process);
           
-    BldSetSub( pSubrecord->name );
+    BldSetPreSub( pSubrecord->name );
           
     return(0);
 }
 
-static long bldSubProcess(subRecord *pSubrecord)
+static long bldPreSubProcess(subRecord *pSubrecord)
 {
-    if (bldSubDebug)
-        printf("bldSubProcess() : Record %s called bldSubProcess(%p)\n",
+    if (bldPreSubDebug)
+        printf("bldPreSubProcess() : Record %s called bldPreSubProcess(%p)\n",
           pSubrecord->name, (void*) pSubrecord); 
     
-    BldSendData();
+    BldPrepareData();
         
     return(0);
 }
 
+static long bldPostSubInit(subRecord *pSubrecord,TFuncProcess process)
+{
+	if (bldPostSubDebug)
+		printf("bldPostSubInit() : Record %s called bldPostSubInit(%p, %p)\n",
+					 pSubrecord->name, (void*) pSubrecord, (void*) process);
+          
+	BldSetPostSub( pSubrecord->name );
+          
+	return(0);
+}
+
+static long bldPostSubProcess(subRecord *pSubrecord)
+{
+	if (bldPostSubDebug)
+		printf("bldPostSubProcess() : Record %s called bldPostSubProcess(%p)\n",
+					 pSubrecord->name, (void*) pSubrecord); 
+    
+	BldSendData();
+        
+	return(0);
+}
+
 /* Register these symbols for use by IOC code: */
 
-epicsExportAddress(int, bldSubDebug);
-epicsRegisterFunction(bldSubInit);
-epicsRegisterFunction(bldSubProcess);
+epicsExportAddress(int, bldPreSubDebug);
+epicsRegisterFunction(bldPreSubInit);
+epicsRegisterFunction(bldPreSubProcess);
+epicsExportAddress(int, bldPostSubDebug);
+epicsRegisterFunction(bldPostSubInit);
+epicsRegisterFunction(bldPostSubProcess);
 
 } // extern "C"

@@ -1,6 +1,13 @@
-record(sub,"$(IOC):bldTrigger")
+record(sub,"$(IOC):bldPreTrigger")
 {
-    field(DESC, "Bld Client Trigger")
-    field(INAM,"bldSubInit")
-    field(SNAM,"bldSubProcess")
+    field(DESC, "Bld Pre-computation Trigger")
+    field(INAM,"bldPreSubInit")
+    field(SNAM,"bldPreSubProcess")
+}
+
+record(sub,"$(IOC):bldPostTrigger")
+{
+    field(DESC, "Bld Post-computation Trigger")
+    field(INAM,"bldPostSubInit")
+    field(SNAM,"bldPostSubProcess")
 }

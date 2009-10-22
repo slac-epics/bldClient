@@ -12,7 +12,8 @@ static const iocshArg     BldConfigArgs[] =
     {"sInterfaceIp", iocshArgString},
     {"uSrcPyhsicalId", iocshArgInt},
     {"iDataType", iocshArgInt},
-    {"sBldPvTrigger", iocshArgString},
+    {"sBldPvPreTrigger", iocshArgString},
+    {"sBldPvPostTrigger", iocshArgString},
     {"sBldPvFiducial", iocshArgString},
     {"sBldPvList", iocshArgString},
 };
@@ -23,15 +24,24 @@ static const iocshArg*    BldConfigArgPtrs[] =
   BldConfigArgs, BldConfigArgs+1, BldConfigArgs+2,
   BldConfigArgs+3, BldConfigArgs+4, BldConfigArgs+5,
   BldConfigArgs+6, BldConfigArgs+7, BldConfigArgs+8,
+  BldConfigArgs+9,
 };
 
-static const iocshArg     BldSetSubArgs[] = 
+static const iocshArg     BldSetPreSubArgs[] = 
 {
-    {"sBldSubRec", iocshArgString},
+    {"sBldPreSubRec", iocshArgString},
 };
 
-static const iocshArg*    BldSetSubArgPtrs[] = 
-{ BldSetSubArgs };
+static const iocshArg     BldSetPostSubArgs[] = 
+{
+    {"sBldPostSubRec", iocshArgString},
+};
+
+static const iocshArg*    BldSetPreSubArgPtrs[] = 
+{ BldSetPreSubArgs };
+
+static const iocshArg*    BldSetPostSubArgPtrs[] = 
+{ BldSetPostSubArgs };
 
 static const iocshArg     BldSetDebugLevelArgs[] = 
 {
@@ -44,10 +54,12 @@ static const iocshArg*    BldSetDebugLevelArgPtrs[] =
 static const iocshFuncDef iocShBldStartFuncDef = {"BldStart", 0, NULL};
 static const iocshFuncDef iocShBldStopFuncDef = {"BldStop", 0, NULL};
 static const iocshFuncDef iocShBldIsStartedFuncDef = {"BldIsStarted", 0, NULL};
-static const iocshFuncDef iocShBldConfigFuncDef = {"BldConfig", 9, BldConfigArgPtrs};
+static const iocshFuncDef iocShBldConfigFuncDef = {"BldConfig", 10, BldConfigArgPtrs};
 static const iocshFuncDef iocShBldShowConfigFuncDef = {"BldShowConfig", 0, NULL};
-static const iocshFuncDef iocShBldSetSubFuncDef = {"BldSetSub", 1, BldSetSubArgPtrs};
+static const iocshFuncDef iocShBldSetPreSubFuncDef = {"BldSetPreSub", 1, BldSetPreSubArgPtrs};
+static const iocshFuncDef iocShBldSetPostSubFuncDef = {"BldSetPostSub", 1, BldSetPostSubArgPtrs};
 static const iocshFuncDef iocShBldSendDataFuncDef = {"BldSendData", 0, NULL};
+static const iocshFuncDef iocShBldPrepareDataFuncDef = {"BldPrepareData", 0, NULL};
 static const iocshFuncDef iocShBldSetDebugLevelFuncDef = {"BldSetDebugLevel", 1, BldSetDebugLevelArgPtrs};
 static const iocshFuncDef iocShBldGetDebugLevelFuncDef = {"BldGetDebugLevel", 0, NULL};
 
@@ -70,7 +82,7 @@ static void iocShBldIsStartedCallFunc(const iocshArgBuf *args)
 static void iocShBldConfigCallFunc(const iocshArgBuf *args) 
 {
     BldConfig( args[0].sval, args[1].ival, args[2].ival, args[3].sval, args[4].ival, args[5].ival,
-      args[6].sval, args[7].sval, args[8].sval );
+               args[6].sval, args[7].sval, args[8].sval, args[9].sval  );
 }
 
 static void iocShBldShowConfigCallFunc(const iocshArgBuf *args) 
@@ -78,9 +90,19 @@ static void iocShBldShowConfigCallFunc(const iocshArgBuf *args)
     BldShowConfig();
 }
 
-static void iocShBldSetSubCallFunc(const iocshArgBuf *args) 
+static void iocShBldSetPreSubCallFunc(const iocshArgBuf *args) 
 {
-    BldSetSub( args[0].sval );
+    BldSetPreSub( args[0].sval );
+}
+
+static void iocShBldSetPostSubCallFunc(const iocshArgBuf *args) 
+{
+    BldSetPostSub( args[0].sval );
+}
+
+static void iocShBldPrepareDataCallFunc(const iocshArgBuf *args) 
+{
+    BldPrepareData();
 }
 
 static void iocShBldSendDataCallFunc(const iocshArgBuf *args) 
@@ -109,10 +131,14 @@ static void iocShBldConfigRegister(void)
   { iocshRegister(&iocShBldConfigFuncDef, iocShBldConfigCallFunc); }
 static void iocShBldShowConfigRegister(void) 
   { iocshRegister(&iocShBldShowConfigFuncDef, iocShBldShowConfigCallFunc); }
-static void iocShBldSetSubRegister(void) 
-  { iocshRegister(&iocShBldSetSubFuncDef, iocShBldSetSubCallFunc); }
+static void iocShBldSetPreSubRegister(void) 
+  { iocshRegister(&iocShBldSetPreSubFuncDef, iocShBldSetPreSubCallFunc); }
+static void iocShBldSetPostSubRegister(void) 
+{ iocshRegister(&iocShBldSetPostSubFuncDef, iocShBldSetPostSubCallFunc); }
 static void iocShBldSendDataRegister(void) 
   { iocshRegister(&iocShBldSendDataFuncDef, iocShBldSendDataCallFunc); }
+static void iocShBldPrepareDataRegister(void) 
+{ iocshRegister(&iocShBldPrepareDataFuncDef, iocShBldPrepareDataCallFunc); }
 static void iocShBldSetDebugLevelRegister(void) 
   { iocshRegister(&iocShBldSetDebugLevelFuncDef, iocShBldSetDebugLevelCallFunc); }
 static void iocShBldGetDebugLevelRegister(void) 
@@ -123,8 +149,10 @@ epicsExportRegistrar(iocShBldStopRegister);
 epicsExportRegistrar(iocShBldIsStartedRegister);
 epicsExportRegistrar(iocShBldConfigRegister);
 epicsExportRegistrar(iocShBldShowConfigRegister);
-epicsExportRegistrar(iocShBldSetSubRegister);
+epicsExportRegistrar(iocShBldSetPreSubRegister);
+epicsExportRegistrar(iocShBldSetPostSubRegister);
 epicsExportRegistrar(iocShBldSendDataRegister);
+epicsExportRegistrar(iocShBldPrepareDataRegister);
 epicsExportRegistrar(iocShBldSetDebugLevelRegister);
 epicsExportRegistrar(iocShBldGetDebugLevelRegister);
 

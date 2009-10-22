@@ -19,14 +19,17 @@ public:
     virtual bool IsStarted() const  = 0;
     virtual int bldConfig( const char* sAddr, unsigned short uPort, 
       unsigned int uMaxDataSize, const char* sInterfaceIp, 
-      unsigned int uSrcPyhsicalId, unsigned int uDataType, const char* sBldPvTrigger, 
+      unsigned int uSrcPyhsicalId, unsigned int uDataType, 
+      const char* sBldPvPreTrigger, const char* sBldPvPostTrigger,
       const char* sBldPvFiducial, const char* sBldPvList )  = 0;
     virtual void bldShowConfig()  = 0;
 
     // To be called by the init function of subroutine record
-    virtual int bldSetSub( const char* sBldSubRec )  = 0; 
+    virtual int bldSetPreSub( const char* sBldSubRec )  = 0; 
+    virtual int bldSetPostSub( const char* sBldSubRec )  = 0; 
     
-    // To be called by trigger variables (subroutine records)      
+    // To be called by trigger variables (subroutine records)
+    virtual int bldPrepareData() = 0;       
     virtual int bldSendData() = 0; 
     
     // debug information control
@@ -83,10 +86,12 @@ int BldStop();
 bool BldIsStarted();
 
 int BldConfig( const char* sAddr, unsigned short uPort, unsigned int uMaxDataSize, const char* sInterfaceIp, 
-  unsigned int uSrcPyhsicalId, unsigned int uDataType, const char* sBldPvTrigger, const char* sBldPvFiducial, const char* sBldPvList );
+               unsigned int uSrcPyhsicalId, unsigned int uDataType, const char* sBldPvPreTrigger, const char* sBldPvPostTrigger, const char* sBldPvFiducial, const char* sBldPvList );
 void BldShowConfig();
 
-int BldSetSub( const char* sBldSubRec ); 
+int BldSetPreSub( const char* sBldSubRec ); 
+int BldSetPostSub( const char* sBldSubRec );
+int BldPrepareData(); 
 int BldSendData(); 
 
 void BldSetDebugLevel(int iDebugLevel); 
