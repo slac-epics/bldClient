@@ -41,27 +41,28 @@ public:
     /*
        EBeam bld does not use this module
      */
-    
+ 
     // Imported from PDS repository: pdsdata/xtc/TypeId.hh : TypId::Type
-    enum XtcDataType {
-      Any, 
-      Id_Xtc,          // generic hierarchical container
-      Id_Frame,        // raw image
-      Id_AcqWaveform,
-      Id_AcqConfig,
-      Id_TwoDGaussian, // 2-D Gaussian + covariances
-      Id_Opal1kConfig,
-      Id_FrameFexConfig,
-      Id_EvrConfig,
-      Id_TM6740Config,
-      Id_ControlConfig,
-      Id_pnCCDframe,
-      Id_pnCCDconfig,
-      Id_Epics,        // Epics Data Type
-      Id_FEEGasDetEnergy,
-      Id_EBeam,
-      Id_PhaseCavity,
-      NumberOfXtcDataType
+    enum XtcDataType 
+    {
+        Any                 = 0, 
+        Id_Xtc              = 1,          // generic hierarchical container
+        Id_Frame            = 2,        // raw image
+        Id_AcqWaveform      = 3,
+        Id_AcqConfig        = 4,
+        Id_TwoDGaussian     = 5, // 2-D Gaussian + covariances
+        Id_Opal1kConfig     = 6,
+        Id_FrameFexConfig   = 7,
+        Id_EvrConfig        = 8,
+        Id_TM6740Config     = 9,
+        Id_ControlConfig    = 10,
+        Id_pnCCDframe       = 11,
+        Id_pnCCDconfig      = 12,
+        Id_Epics            = 13,        // Epics Data Type
+        Id_FEEGasDetEnergy  = 14,
+        Id_EBeam            = 15,
+        Id_PhaseCavity      = 16,
+        NumberOfXtcDataType
     };
 
     /*
@@ -74,55 +75,12 @@ public:
      * Public functions
      */    
     BldPacketHeader( unsigned int uMaxPacketSize, uint32_t uSecs1, uint32_t uNanoSecs1, uint32_t uFiducialId1, 
-      uint32_t uDamage1, uint32_t uPhysicalId1, uint32_t uDataType1) :
-      uSecs(setu32LE(uSecs1)), uNanoSecs(setu32LE(uNanoSecs1)), uMBZ1(0), 
-      uFiducialId(setu32LE(uFiducialId1)), uMBZ2(0), uDamage(setu32LE(uDamage1)), 
-      uLogicalId(setu32LE(uBldLogicalId)), uPhysicalId(setu32LE(uPhysicalId1)),
-      uDataType(setu32LE(uDataType1))
-    { 
-        if ( uPhysicalId1 < 0 || uPhysicalId1 >= NumberOfBldTypeId )
-        {
-            printf( "BldPacketHeader::BldPacketHeader() Input argument uLogicalId value (%lu) is out of range\n",
-                (unsigned long) uPhysicalId1 );
-                
-            uDamage = setu32LE(uDamgeTrue);
-            uExtentSize = 0;
-            return;
-        }
-       
-        unsigned int uExtentSize1 = sizeof(BldPacketHeader) - 10 * sizeof(uint32_t) + liBldPacketSizeByBldType[uPhysicalId1];
-            
-        if ( uExtentSize1 > uMaxPacketSize )
-        {
-            printf( "BldPacketHeader::BldPacketHeader() Packet size (%u) is larger than given buffer size (%u) \n",
-                (unsigned int) uExtentSize1, uMaxPacketSize );
-                
-            uDamage = setu32LE(uDamgeTrue);
-            uExtentSize = 0;
-            return;
-        }
-        
-        uExtentSize = setu32LE(uExtentSize1);
-        
-        if ( (int) uDataType1 != ltXtcDataTypeByBldType[uPhysicalId1] )
-        {
-            printf( "BldPacketHeader::BldPacketHeader() Input argument uDataType value (%lu) is "
-              "not compatible with physical id %lu. Expected uDataType value = %d.\n",
-                (unsigned long) uDataType1, (unsigned long) uPhysicalId1, ltXtcDataTypeByBldType[uPhysicalId1] );
-                
-            uDamage = setu32LE(uDamgeTrue);
-            uExtentSize = 0;
-        }
-        
-        // Mirror Xtc Section 1 to Section 2
-        uDamage2 = uDamage;
-        uLogicalId2 = uLogicalId;
-        uPhysicalId2 = uPhysicalId;
-        uDataType2 = uDataType;
-        uExtentSize2 = uExtentSize;        
-    }        
-    
-    unsigned int getPacketSize() { return (unsigned int)  setu32LE(uExtentSize) + 10 * sizeof(uint32_t); }
+      uint32_t uDamage1, uint32_t uPhysicalId1, uint32_t uDataType1);
+
+    unsigned int getPacketSize()
+    {
+        return (unsigned int)  setu32LE(uExtentSize) + 10 * sizeof(uint32_t);
+    }
     int setPvValue( int iPvIndex, void* pPvValue );
     
 private:    
