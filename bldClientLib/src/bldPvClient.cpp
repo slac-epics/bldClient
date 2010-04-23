@@ -96,6 +96,7 @@ int BldGetDebugLevel()
 } // extern "C"
 
 using std::string;
+using std::size_t;
 
 /*
  * local class declarations
@@ -687,11 +688,11 @@ void BldPvClientBasic::bldShowConfig()
  */
 int BldPvClientBasic::_splitPvList( const string& sBldPvList, std::vector<string>& vsBldPv )
 {
-    unsigned int uOffsetStart = sBldPvList.find_first_not_of( sPvListSeparators, 0 );
+    size_t	uOffsetStart = sBldPvList.find_first_not_of( sPvListSeparators, 0 );
     while ( uOffsetStart != string::npos )      
-    {        
-        unsigned uOffsetEnd = sBldPvList.find_first_of( sPvListSeparators, uOffsetStart+1 );
-        
+    {
+        size_t uOffsetEnd = sBldPvList.find_first_of( sPvListSeparators, uOffsetStart+1 );
+
         if ( uOffsetEnd == string::npos )        
         {
             vsBldPv.push_back( sBldPvList.substr( uOffsetStart, string::npos ) );
@@ -712,7 +713,7 @@ int BldPvClientBasic::readPv(const char *sVariableName, int iBufferSize, void* p
         return 1;
     }
     
-    if ( (unsigned int) pBuffer & 0x3 != 0  )
+    if ( reinterpret_cast<unsigned long>(pBuffer) & 0x3 != 0  )
     {
         printf( "readPv(): Buffer should be aligned in 32 bits boundaries\n" );
         return 2;
@@ -759,7 +760,7 @@ int BldPvClientBasic::writePv(const char *sVariableName, const void* pBuffer, sh
         return 1;
     }
     
-    if ( (unsigned int) pBuffer & 0x3 != 0  )
+    if ( reinterpret_cast<unsigned long>(pBuffer) & 0x3 != 0  )
     {
         printf( "writePv(): Buffer should be aligned in 32 bits boundaries\n" );
         return 2;
