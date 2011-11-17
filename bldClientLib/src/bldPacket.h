@@ -5,6 +5,8 @@
 
 namespace EpicsBld
 {   
+
+typedef int (*TSetPvFuncPointer)(int iPvIndex, void* pPvValue, void* payload);
     
 class BldPacketHeader
 {
@@ -37,12 +39,14 @@ public:
      */
      
     // Imported from PDS repository: pdsdata/xtc/BldInfo.hh : BldInfo::Type
-    enum BldTypeId { EBeam, PhaseCavity, FEEGasDetEnergy, NumberOfBldTypeId }; 
+    // Note that this is only the ones *we* handle!  Max is set large for the future!
+    enum BldTypeId { EBeam, PhaseCavity, FEEGasDetEnergy, NumberOfBldTypeId=100 }; 
     /*
        EBeam bld does not use this module
      */
  
     // Imported from PDS repository: pdsdata/xtc/TypeId.hh : TypId::Type
+    // Note that this is only the ones *we* handle!  Max is set large for the future!
     enum XtcDataType 
     {
         Any                 = 0, 
@@ -62,14 +66,8 @@ public:
         Id_FEEGasDetEnergy  = 14,
         Id_EBeam            = 15,
         Id_PhaseCavity      = 16,
-        NumberOfXtcDataType
+        NumberOfXtcDataType=200
     };
-
-    /*
-     * static const tables
-     */    
-    static const int liBldPacketSizeByBldType[NumberOfBldTypeId];
-    static const XtcDataType ltXtcDataTypeByBldType[NumberOfBldTypeId];
 
     /*
      * Public functions
@@ -77,23 +75,41 @@ public:
     BldPacketHeader( unsigned int uMaxPacketSize, uint32_t uSecs1, uint32_t uNanoSecs1, uint32_t uFiducialId1, 
       uint32_t uDamage1, uint32_t uPhysicalId1, uint32_t uDataType1);
 
+
+    static void Initialize(void);
+
+    static void Register(unsigned int uPhysicalId, uint32_t uDataType, unsigned int pktsize,
+                         TSetPvFuncPointer func) 
+    {
+        Initialize();
+        if (uPhysicalId < NumberOfBldTypeId) {
+            ltXtcDataTypeByBldType[uPhysicalId] = (XtcDataType) uDataType;
+            liBldPacketSizeByBldType[uPhysicalId] = pktsize;
+            lfuncSetvFunctionTable[uPhysicalId] = func;
+        }
+    }
+
     unsigned int getPacketSize()
     {
         return (unsigned int)  setu32LE(uExtentSize) + 10 * sizeof(uint32_t);
     }
+
     int setPvValue( int iPvIndex, void* pPvValue );
     
 private:    
     static const uint32_t uBldLogicalId = 0x06000000; // from PDS Repository: pdsdata/xtc/Level.hh: Level::Reporter            
     static const uint32_t uDamgeTrue = 0x4000; // from Bld ICD
+
+    static int init_done;
     
-    typedef int (BldPacketHeader::*TSetPvFuncPointer)(int iPvIndex, void* pPvValue );
-    static const TSetPvFuncPointer lfuncSetvFunctionTable[NumberOfBldTypeId];
-    
-    int setPvValuePulseEnergy( int iPvIndex, void* pPvValue );
-    int setPvValuePhaseCavity( int iPvIndex, void* pPvValue );
-    int setPvValueFEEGasDetEnergy( int iPvIndex, void* pPvValue );
-    
+    /*
+     * static tables
+     */    
+    static XtcDataType ltXtcDataTypeByBldType[NumberOfBldTypeId];
+    static int liBldPacketSizeByBldType[NumberOfBldTypeId];
+    static TSetPvFuncPointer lfuncSetvFunctionTable[NumberOfBldTypeId];
+
+public:  
 // Check for little endian
 #if defined(__rtems__)
 

@@ -629,6 +629,8 @@ int BldPvClientBasic::bldConfig( const char* sAddr, unsigned short uPort,
   unsigned int uMaxDataSize, const char* sInterfaceIp, unsigned int uSrcPyhsicalId, unsigned int uDataType, 
   const char* sBldPvPreTrigger, const char* sBldPvPostTrigger, const char* sBldPvFiducial, const char* sBldPvList )
 {   
+    BldPacketHeader::Initialize();
+
     if ( _bBldStarted )
     {
         printf( "BldPvClientBasic::bldConfig() : Need to stop bld before config\n" );

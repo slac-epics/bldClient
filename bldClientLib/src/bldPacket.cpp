@@ -1,4 +1,5 @@
 #include "bldPacket.h"
+#include <string.h>
 
 /*
  * class member definitions
@@ -9,27 +10,10 @@ namespace EpicsBld
  * class BldPacketHeader
  */
 
-const int BldPacketHeader::liBldPacketSizeByBldType[] = 
-{ 
-    0, 
-    sizeof(double)*4, 
-    sizeof(double)*4 
-};
-
-const BldPacketHeader::XtcDataType BldPacketHeader::ltXtcDataTypeByBldType[] =
-{
-    Any,
-    Id_PhaseCavity,
-    Id_FEEGasDetEnergy,    
-};
-
-const BldPacketHeader::TSetPvFuncPointer BldPacketHeader::lfuncSetvFunctionTable[] =
-{
-    &BldPacketHeader::setPvValuePulseEnergy,
-    &BldPacketHeader::setPvValuePhaseCavity,
-    &BldPacketHeader::setPvValueFEEGasDetEnergy,
-};
-
+int BldPacketHeader::liBldPacketSizeByBldType[BldPacketHeader::NumberOfBldTypeId];
+BldPacketHeader::XtcDataType BldPacketHeader::ltXtcDataTypeByBldType[BldPacketHeader::NumberOfBldTypeId];
+TSetPvFuncPointer BldPacketHeader::lfuncSetvFunctionTable[BldPacketHeader::NumberOfBldTypeId];
+int BldPacketHeader::init_done = 0;
 
 BldPacketHeader::BldPacketHeader(
     unsigned int    uMaxPacketSize,
@@ -93,30 +77,53 @@ BldPacketHeader::BldPacketHeader(
     
 int BldPacketHeader::setPvValue( int iPvIndex, void* pPvValue )
 {
-    return ( this->*lfuncSetvFunctionTable[ setu32LE(uPhysicalId) ] ) ( iPvIndex, pPvValue );
+    TSetPvFuncPointer fn = this->lfuncSetvFunctionTable[ setu32LE(uPhysicalId) ];
+    if (fn)
+        return ( *fn ) ( iPvIndex, pPvValue, (void *)(this + 1));
+    else
+        return 0;
 }
 
-int BldPacketHeader::setPvValuePulseEnergy( int iPvIndex, void* pPvValue )
+int setPvValuePulseEnergy( int iPvIndex, void* pPvValue, void *payload )
 {
     return 0;
 }
 
-int BldPacketHeader::setPvValuePhaseCavity( int iPvIndex, void* pPvValue )
-{
-    double* pSrcPvValue = (double*) pPvValue;
-    double* pDstPvValue = ((double*) (this + 1)) + iPvIndex;
-    
-    *pDstPvValue = setdoubleLE(*pSrcPvValue);
-    return 0;
-}
-
-int BldPacketHeader::setPvValueFEEGasDetEnergy( int iPvIndex, void* pPvValue )
+int setPvValuePhaseCavity( int iPvIndex, void* pPvValue, void *payload )
 {
     double* pSrcPvValue = (double*) pPvValue;
-    double* pDstPvValue = ((double*) (this + 1)) + iPvIndex;
+    double* pDstPvValue = ((double*) payload) + iPvIndex;
     
-    *pDstPvValue = setdoubleLE(*pSrcPvValue);
+    *pDstPvValue = BldPacketHeader::setdoubleLE(*pSrcPvValue);
     return 0;
+}
+
+int setPvValueFEEGasDetEnergy( int iPvIndex, void* pPvValue, void *payload )
+{
+    double* pSrcPvValue = (double*) pPvValue;
+    double* pDstPvValue = ((double*) payload) + iPvIndex;
+    
+    *pDstPvValue = BldPacketHeader::setdoubleLE(*pSrcPvValue);
+    return 0;
+}
+
+void BldPacketHeader::Initialize(void)
+{
+    if (!init_done) {
+        init_done = 1; /* Do this first, so we don't loop! */
+        Register(EBeam,           Any,                0,                &setPvValuePulseEnergy);
+        Register(PhaseCavity,     Id_PhaseCavity,     sizeof(double)*4, &setPvValuePhaseCavity);
+        Register(FEEGasDetEnergy, Id_FEEGasDetEnergy, sizeof(double)*4, &setPvValueFEEGasDetEnergy);
+    }
 }
 
 } // namespace EpicsBld
+
+extern "C"
+{
+    void BldRegister(unsigned int uPhysicalId, uint32_t uDataType, unsigned int pktsize,
+                     int (*func)(int iPvIndex, void* pPvValue, void* payload))
+    {
+        EpicsBld::BldPacketHeader::Register(uPhysicalId, uDataType, pktsize, func);
+    }
+}
