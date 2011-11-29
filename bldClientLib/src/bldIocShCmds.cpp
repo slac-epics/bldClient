@@ -142,7 +142,7 @@ static void iocShBldGetDebugLevelCallFunc(const iocshArgBuf *args)
 }
 
 /* Registration routine, runs at startup */
-void iocShBldSetIDRegister(void) 
+static void iocShBldSetIDRegister(void) 
   { iocshRegister(&iocShBldSetIDFuncDef, iocShBldSetIDCallFunc); }
 static void iocShBldStartRegister(void) 
   { iocshRegister(&iocShBldStartFuncDef, iocShBldStartCallFunc); }
