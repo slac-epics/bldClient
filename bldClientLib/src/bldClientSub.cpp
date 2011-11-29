@@ -30,7 +30,7 @@ static long bldPreSubInit(subRecord *pSubrecord,TFuncProcess process)
         printf("bldPreSubInit() : Record %s called bldPreSubInit(%p, %p)\n",
           pSubrecord->name, (void*) pSubrecord, (void*) process);
           
-    BldSetPreSub( pSubrecord->name );
+    BldSetPreSub( (int) pSubrecord->a, pSubrecord->name );
           
     return(0);
 }
@@ -41,7 +41,7 @@ static long bldPreSubProcess(subRecord *pSubrecord)
         printf("bldPreSubProcess() : Record %s called bldPreSubProcess(%p)\n",
           pSubrecord->name, (void*) pSubrecord); 
     
-    BldPrepareData();
+    BldPrepareData(pSubrecord->a);
         
     return(0);
 }
@@ -52,7 +52,7 @@ static long bldPostSubInit(subRecord *pSubrecord,TFuncProcess process)
 		printf("bldPostSubInit() : Record %s called bldPostSubInit(%p, %p)\n",
 					 pSubrecord->name, (void*) pSubrecord, (void*) process);
           
-	BldSetPostSub( pSubrecord->name );
+	BldSetPostSub( (int) pSubrecord->a, pSubrecord->name );
           
 	return(0);
 }
@@ -63,7 +63,7 @@ static long bldPostSubProcess(subRecord *pSubrecord)
 		printf("bldPostSubProcess() : Record %s called bldPostSubProcess(%p)\n",
 					 pSubrecord->name, (void*) pSubrecord); 
     
-	BldSendData();
+	BldSendData((int) pSubrecord->a);
         
 	return(0);
 }

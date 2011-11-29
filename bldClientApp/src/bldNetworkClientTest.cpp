@@ -133,8 +133,8 @@ int testBldAPI_C(char* sInterfaceIp)
 #include <dbStaticLib.h>
 void linkFunctions()
 {
-    BldStart();
-    BldSendData();        
+    BldStart(0);
+    BldSendData(0);        
     
     extern int bldClient_registerRecordDeviceDriver(DBBASE *pbase);
     bldClient_registerRecordDeviceDriver(NULL);

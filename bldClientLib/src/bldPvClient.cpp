@@ -34,63 +34,64 @@ extern "C"
  * on the singelton objectdirectly. Therefore no object lifetime management 
  * function is provided.
  */
-int BldStart()
+int BldStart(int id)
 {
-    return EpicsBld::BldPvClientFactory::getSingletonBldPvClient().bldStart();
+    return EpicsBld::BldPvClientFactory::getSingletonBldPvClient(id).bldStart();
 }
 
-int BldStop()
+int BldStop(int id)
 {
-    return EpicsBld::BldPvClientFactory::getSingletonBldPvClient().bldStop();    
+    return EpicsBld::BldPvClientFactory::getSingletonBldPvClient(id).bldStop();    
 }
 
-bool BldIsStarted()
+bool BldIsStarted(int id)
 {
-    return EpicsBld::BldPvClientFactory::getSingletonBldPvClient().IsStarted();
+    return EpicsBld::BldPvClientFactory::getSingletonBldPvClient(id).IsStarted();
 }
 
-int BldConfig( const char* sAddr, unsigned short uPort, 
+int BldConfig(int id, const char* sAddr, unsigned short uPort, 
   unsigned int uMaxDataSize, const char* sInterfaceIp, unsigned int uSrcPyhsicalId, 
   unsigned int uDataType, const char* sBldPvPreTrigger, const char* sBldPvPostTrigger, 
   const char* sBldPvFiducial, const char* sBldPvList )
 {
-    return EpicsBld::BldPvClientFactory::getSingletonBldPvClient().bldConfig(
-            sAddr, uPort, uMaxDataSize, sInterfaceIp, uSrcPyhsicalId, uDataType, sBldPvPreTrigger, sBldPvPostTrigger, sBldPvFiducial, sBldPvList);
+    return EpicsBld::BldPvClientFactory::getSingletonBldPvClient(id).bldConfig(
+            sAddr, uPort, uMaxDataSize, sInterfaceIp, uSrcPyhsicalId, uDataType, sBldPvPreTrigger,
+            sBldPvPostTrigger, sBldPvFiducial, sBldPvList);
 }
 
-void BldShowConfig()
+void BldShowConfig(int id)
 {
-    return EpicsBld::BldPvClientFactory::getSingletonBldPvClient().bldShowConfig();
+    return EpicsBld::BldPvClientFactory::getSingletonBldPvClient(id).bldShowConfig();
 }
 
-int BldSetPreSub( const char* sBldSubRec )
+int BldSetPreSub(int id, const char* sBldSubRec)
 {
-    return EpicsBld::BldPvClientFactory::getSingletonBldPvClient().bldSetPreSub(sBldSubRec);
+    return EpicsBld::BldPvClientFactory::getSingletonBldPvClient(id).bldSetPreSub(sBldSubRec);
 }
 
-int BldSetPostSub( const char* sBldSubRec )
+int BldSetPostSub(int id, const char* sBldSubRec)
 {
-    return EpicsBld::BldPvClientFactory::getSingletonBldPvClient().bldSetPostSub(sBldSubRec);
+    return EpicsBld::BldPvClientFactory::getSingletonBldPvClient(id).bldSetPostSub(sBldSubRec);
 }
 
-int BldPrepareData()
+int BldPrepareData(int id)
 {
-    return EpicsBld::BldPvClientFactory::getSingletonBldPvClient().bldPrepareData();
+    return EpicsBld::BldPvClientFactory::getSingletonBldPvClient(id).bldPrepareData();
 }
 
-int BldSendData()
+int BldSendData(int id)
 {
-    return EpicsBld::BldPvClientFactory::getSingletonBldPvClient().bldSendData();
+    return EpicsBld::BldPvClientFactory::getSingletonBldPvClient(id).bldSendData();
 }
 
-void BldSetDebugLevel(int iDebugLevel)
+void BldSetDebugLevel(int id, int iDebugLevel)
 {
-    EpicsBld::BldPvClientFactory::getSingletonBldPvClient().setDebugLevel(iDebugLevel);
+    EpicsBld::BldPvClientFactory::getSingletonBldPvClient(id).setDebugLevel(iDebugLevel);
 }
 
-int BldGetDebugLevel()
+int BldGetDebugLevel(int id)
 {
-    return EpicsBld::BldPvClientFactory::getSingletonBldPvClient().getDebugLevel();
+    return EpicsBld::BldPvClientFactory::getSingletonBldPvClient(id).getDebugLevel();
 }
  
 } // extern "C"
@@ -133,7 +134,7 @@ public:
     virtual void setDebugLevel(int iDebugLevel);
     virtual int getDebugLevel();    
     
-    static BldPvClientBasic& getSingletonObject(); // singelton interface
+    static BldPvClientBasic& getSingletonObject(int id); // singelton interface
     
 private:
     bool _bBldStarted;
@@ -160,8 +161,11 @@ private:
     /*
      * Utility varaibles and functions
      */
-    static const int iMTU; // Ethernet packet MTU
+#define iMTU 9000   // Ethernet packet MTU
     static const char sPvListSeparators[];
+
+    long llBufPvVal[iMTU / sizeof(long)]; // Align with long int boundaries
+    char lcMsgBuffer[iMTU];
 
     static int _splitPvList( const string& sBldPvList, std::vector<string>& vsBldPv );
     
@@ -187,9 +191,9 @@ namespace EpicsBld
 /**
  * class BldPvClientFactory
  */
-BldPvClientInterface& BldPvClientFactory::getSingletonBldPvClient()
+BldPvClientInterface& BldPvClientFactory::getSingletonBldPvClient(int id)
 {
-    return BldPvClientBasic::getSingletonObject();
+    return BldPvClientBasic::getSingletonObject(id);
 }
 
 /*
@@ -200,15 +204,14 @@ BldPvClientInterface& BldPvClientFactory::getSingletonBldPvClient()
  * private static variables
  */
 
-const int BldPvClientBasic::iMTU = 9000; // Ethernet packet MTU
 const char BldPvClientBasic::sPvListSeparators[] = " ,;\r\n";
 
 /* static member functions */
  
-BldPvClientBasic& BldPvClientBasic::getSingletonObject()
+BldPvClientBasic& BldPvClientBasic::getSingletonObject(int id)
 {
-    static BldPvClientBasic bldDataClient;
-    return bldDataClient;
+    static BldPvClientBasic bldDataClient[10]; // Ick!
+    return bldDataClient[id];
 }
 
 /* public member functions */
@@ -264,7 +267,6 @@ try
     {
         short int iFieldType = 0;
         long lNumElements = 0;
-        long llBufPvVal[16] = {0}; // Align with long int boundaries
         char* lcBufPvVal = (char*) llBufPvVal;
 
         // Read PV: (_sBldPvPreTrigger).FLNK
@@ -310,7 +312,6 @@ try
     {
         short int iFieldType = 0;
         long lNumElements = 0;
-        long llBufPvVal[16] = {0}; // Align with long int boundaries
         char* lcBufPvVal = (char*) llBufPvVal;
 
         // Read PV: (_sBldPvPostTrigger).FLNK
@@ -376,7 +377,6 @@ try
      */
     if ( !_sBldPvPreTrigger.empty() )
     {
-        long llBufPvVal[16] = {0}; // Align with long int boundaries
         char* lcBufPvVal = (char*) llBufPvVal;
         
         // Set PV: (_sBldPvPreTrigger).FLNK = ""
@@ -411,7 +411,6 @@ try
     */
     if ( !_sBldPvPostTrigger.empty() )
     {
-        long llBufPvVal[16] = {0}; // Align with long int boundaries
         char* lcBufPvVal = (char*) llBufPvVal;
         
         // Set PV: (_sBldPvPostTrigger).FLNK = ""
@@ -486,7 +485,6 @@ try
 {       
     short int iFieldType = 0;
     long lNumElements = 0;
-    static long llBufPvVal[iMTU / sizeof(long)] = {0}; // Align with long int boundaries
     
     unsigned int uFiducialId = 0;
     if ( _sBldPvFiducial.length() > 0 )
@@ -537,9 +535,6 @@ try
 
     std::vector<string> vsBldPv;
     _splitPvList( _sBldPvList, vsBldPv );
-
-    static long llBufPvVal[iMTU / sizeof(long)] = {0}; // Align with long int boundaries
-    static char lcMsgBuffer[iMTU] = {0};
     
     BldPacketHeader* pBldPacketHeader = (BldPacketHeader*) lcMsgBuffer;
     
@@ -800,30 +795,30 @@ int BldPvClientBasic::printPv(const char *sVariableName, void* pBuffer,
       short iValueType, long lNumElements )
 {
     int iRealMsgSize = 0;
-    char lcMsgBuffer[iMTU] = {0};
+    char lcMsgBuffer2[iMTU] = {0};
     int iSprintFail = 
-      sprintPv( sVariableName, pBuffer, sizeof(lcMsgBuffer)-1, lcMsgBuffer, &iRealMsgSize, 
+      sprintPv( sVariableName, pBuffer, sizeof(lcMsgBuffer2)-1, lcMsgBuffer2, &iRealMsgSize, 
       iValueType, lNumElements );
       
     if ( iSprintFail != 0 ) return iSprintFail;
      
-    printf( "%s", lcMsgBuffer );
+    printf( "%s", lcMsgBuffer2 );
     return 0;
 }
 
 int BldPvClientBasic::sprintPv(const char *sVariableName, void* pBuffer, 
-  int iMsgBufferSize, char* lcMsgBuffer, int* piRealMsgSize, short iValueType, long lNumElements )
+  int iMsgBufferSize, char* lcMsgBuffer2, int* piRealMsgSize, short iValueType, long lNumElements )
 {
-    if (sVariableName == NULL || *sVariableName == 0 || pBuffer == NULL || lcMsgBuffer == NULL )
+    if (sVariableName == NULL || *sVariableName == 0 || pBuffer == NULL || lcMsgBuffer2 == NULL )
     {
         printf( "sprintPv(): Invalid parameter\n" );
         return 1;
     }
     
-    char*const pMsgBufferLimit = lcMsgBuffer + iMsgBufferSize;
+    char*const pMsgBufferLimit = lcMsgBuffer2 + iMsgBufferSize;
     
-    int iCharsPrinted = sprintf( lcMsgBuffer, "%s ", sVariableName );
-    char* pcMsgBufferFrom = lcMsgBuffer + iCharsPrinted;    
+    int iCharsPrinted = sprintf( lcMsgBuffer2, "%s ", sVariableName );
+    char* pcMsgBufferFrom = lcMsgBuffer2 + iCharsPrinted;    
     long lElement = 0;
     
     for ( char *pcBufferFrom = (char*) pBuffer;
@@ -881,7 +876,7 @@ int BldPvClientBasic::sprintPv(const char *sVariableName, void* pBuffer,
         pcMsgBufferFrom += strlen( pcMsgBufferFrom );        
     }
         
-    *piRealMsgSize = pcMsgBufferFrom - lcMsgBuffer;
+    *piRealMsgSize = pcMsgBufferFrom - lcMsgBuffer2;
     return 0;
 }
 

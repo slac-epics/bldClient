@@ -3,7 +3,18 @@
 
 #include "bldPvClient.h"
 
+static int bldidx = 0;
+
 /* Information needed by iocsh */
+
+static const iocshArg     BldSetIDArgs[] =
+{
+    {"ID", iocshArgInt},
+};
+
+static const iocshArg*    BldSetIDArgPtrs[] = 
+{ BldSetIDArgs };
+
 static const iocshArg     BldConfigArgs[] = 
 {
     {"sAddr", iocshArgString},
@@ -51,6 +62,7 @@ static const iocshArg     BldSetDebugLevelArgs[] =
 static const iocshArg*    BldSetDebugLevelArgPtrs[] = 
 { BldSetDebugLevelArgs };
 
+static const iocshFuncDef iocShBldSetIDFuncDef = {"BldSetID", 1, BldSetIDArgPtrs};
 static const iocshFuncDef iocShBldStartFuncDef = {"BldStart", 0, NULL};
 static const iocshFuncDef iocShBldStopFuncDef = {"BldStop", 0, NULL};
 static const iocshFuncDef iocShBldIsStartedFuncDef = {"BldIsStarted", 0, NULL};
@@ -64,63 +76,74 @@ static const iocshFuncDef iocShBldSetDebugLevelFuncDef = {"BldSetDebugLevel", 1,
 static const iocshFuncDef iocShBldGetDebugLevelFuncDef = {"BldGetDebugLevel", 0, NULL};
 
 /* Wrapper called by iocsh, selects the argument types that iocShBldStart needs */
+static void iocShBldSetIDCallFunc(const iocshArgBuf *args) 
+{
+    if (args[0].ival >= 0 && args[0].ival < 10) {
+        bldidx = args[0].ival;
+        printf("BLD ID set to %d.\n", bldidx);
+    } else
+        printf("%d is out of range, BLD ID remains %d.\n", args[0].ival, bldidx);
+}
+
 static void iocShBldStartCallFunc(const iocshArgBuf *args) 
 {
-    BldStart();
+    BldStart(bldidx);
 }
 
 static void iocShBldStopCallFunc(const iocshArgBuf *args) 
 {
-    BldStop();
+    BldStop(bldidx);
 }
 
 static void iocShBldIsStartedCallFunc(const iocshArgBuf *args) 
 {
-    printf( "bld is %sstarted.\n", (BldIsStarted() == 0?"not ":"")  );
+    printf( "bld is %sstarted.\n", (BldIsStarted(bldidx) == 0?"not ":"")  );
 }
 
 static void iocShBldConfigCallFunc(const iocshArgBuf *args) 
 {
-    BldConfig( args[0].sval, args[1].ival, args[2].ival, args[3].sval, args[4].ival, args[5].ival,
+    BldConfig( bldidx, args[0].sval, args[1].ival, args[2].ival, args[3].sval, args[4].ival, args[5].ival,
                args[6].sval, args[7].sval, args[8].sval, args[9].sval  );
 }
 
 static void iocShBldShowConfigCallFunc(const iocshArgBuf *args) 
 {
-    BldShowConfig();
+    BldShowConfig(bldidx);
 }
 
 static void iocShBldSetPreSubCallFunc(const iocshArgBuf *args) 
 {
-    BldSetPreSub( args[0].sval );
+    BldSetPreSub( bldidx, args[0].sval );
 }
 
 static void iocShBldSetPostSubCallFunc(const iocshArgBuf *args) 
 {
-    BldSetPostSub( args[0].sval );
+    BldSetPostSub( bldidx, args[0].sval );
 }
 
 static void iocShBldPrepareDataCallFunc(const iocshArgBuf *args) 
 {
-    BldPrepareData();
+    BldPrepareData(bldidx);
 }
 
 static void iocShBldSendDataCallFunc(const iocshArgBuf *args) 
 {
-    BldSendData();
+    BldSendData(bldidx);
 }
 
 static void iocShBldSetDebugLevelCallFunc(const iocshArgBuf *args) 
 {
-    BldSetDebugLevel( args[0].ival );
+    BldSetDebugLevel( bldidx, args[0].ival );
 }
 
 static void iocShBldGetDebugLevelCallFunc(const iocshArgBuf *args) 
 {
-    printf( "bld debug level = %d\n", BldGetDebugLevel() );
+    printf( "bld debug level = %d\n", BldGetDebugLevel(bldidx) );
 }
 
 /* Registration routine, runs at startup */
+void iocShBldSetIDRegister(void) 
+  { iocshRegister(&iocShBldSetIDFuncDef, iocShBldSetIDCallFunc); }
 static void iocShBldStartRegister(void) 
   { iocshRegister(&iocShBldStartFuncDef, iocShBldStartCallFunc); }
 static void iocShBldStopRegister(void) 
@@ -144,6 +167,7 @@ static void iocShBldSetDebugLevelRegister(void)
 static void iocShBldGetDebugLevelRegister(void) 
   { iocshRegister(&iocShBldGetDebugLevelFuncDef, iocShBldGetDebugLevelCallFunc); }
 
+epicsExportRegistrar(iocShBldSetIDRegister);
 epicsExportRegistrar(iocShBldStartRegister);
 epicsExportRegistrar(iocShBldStopRegister);
 epicsExportRegistrar(iocShBldIsStartedRegister);

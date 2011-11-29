@@ -3,6 +3,7 @@ record(sub,"$(IOC):bldPreTrigger")
     field(DESC, "Bld Pre-computation Trigger")
     field(INAM,"bldPreSubInit")
     field(SNAM,"bldPreSubProcess")
+    field(INPA, "$(BLDNO)")
 }
 
 record(sub,"$(IOC):bldPostTrigger")
@@ -10,4 +11,5 @@ record(sub,"$(IOC):bldPostTrigger")
     field(DESC, "Bld Post-computation Trigger")
     field(INAM,"bldPostSubInit")
     field(SNAM,"bldPostSubProcess")
+    field(INPA, "$(BLDNO)")
 }

@@ -60,8 +60,10 @@ public:
      * Get the singelton Bld PV Client object
      *
      * @return              The Bld PV Client singelton object
+     *
+     * OK, this name is now *completely* wrong, as it's not a singleton.
      */
-    static BldPvClientInterface& getSingletonBldPvClient();
+    static BldPvClientInterface& getSingletonBldPvClient(int id);
         
 private:
     /// Disable object instantiation (No object semantics).
@@ -81,21 +83,22 @@ extern "C"
  * on the singelton objectdirectly. Therefore no object lifetime management 
  * function is provided.
  */
-int BldStart();
-int BldStop();
-bool BldIsStarted();
+int BldStart(int id);
+int BldStop(int id);
+bool BldIsStarted(int id);
 
-int BldConfig( const char* sAddr, unsigned short uPort, unsigned int uMaxDataSize, const char* sInterfaceIp, 
-               unsigned int uSrcPyhsicalId, unsigned int uDataType, const char* sBldPvPreTrigger, const char* sBldPvPostTrigger, const char* sBldPvFiducial, const char* sBldPvList );
-void BldShowConfig();
+int BldConfig( int id, const char* sAddr, unsigned short uPort, unsigned int uMaxDataSize, const char* sInterfaceIp, 
+               unsigned int uSrcPyhsicalId, unsigned int uDataType, const char* sBldPvPreTrigger,
+               const char* sBldPvPostTrigger, const char* sBldPvFiducial, const char* sBldPvList );
+void BldShowConfig(int id);
 
-int BldSetPreSub( const char* sBldSubRec ); 
-int BldSetPostSub( const char* sBldSubRec );
-int BldPrepareData(); 
-int BldSendData(); 
+int BldSetPreSub(int id, const char* sBldSubRec); 
+int BldSetPostSub(int id, const char* sBldSubRec);
+int BldPrepareData(int id); 
+int BldSendData(int id); 
 
-void BldSetDebugLevel(int iDebugLevel); 
-int BldGetDebugLevel(); 
+void BldSetDebugLevel(int id, int iDebugLevel); 
+int BldGetDebugLevel(int id); 
 }
 
 #endif
