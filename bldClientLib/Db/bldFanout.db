@@ -1,0 +1,5 @@
+record(fanout,"$(IOC):bldFanout")
+{
+    field(DESC, "Bld Pre-trigger fanout")
+    field(SELM, "All")
+}

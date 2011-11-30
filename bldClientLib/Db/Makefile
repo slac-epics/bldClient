@@ -11,6 +11,7 @@ include $(TOP)/configure/CONFIG
 # Create and install (or just install)
 # databases, templates, substitutions like this
 DB += bldSettings.db
+DB += bldFanout.db
 
 #----------------------------------------------------
 # If <anyname>.db template is not named <anyname>*.template add

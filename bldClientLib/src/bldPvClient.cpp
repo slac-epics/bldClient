@@ -268,9 +268,13 @@ try
         short int iFieldType = 0;
         long lNumElements = 0;
         char* lcBufPvVal = (char*) llBufPvVal;
+        llBufPvVal[0] = 0;
 
         // Read PV: (_sBldPvPreTrigger).FLNK
-        string sBldPvPreTriggerFieldFLNK = _sBldPvPreTrigger + ".FLNK";
+        // If it has ".XXX" at the end, no need to append ".FLNK"!
+        string sBldPvPreTriggerFieldFLNK = 
+            (_sBldPvPreTrigger.find('.') == string::npos) ? _sBldPvPreTrigger + ".FLNK"
+                                                          : _sBldPvPreTrigger;
         if ( 
           readPv( sBldPvPreTriggerFieldFLNK.c_str(), sizeof(llBufPvVal), llBufPvVal, &iFieldType, &lNumElements )
           != 0 )
@@ -313,6 +317,7 @@ try
         short int iFieldType = 0;
         long lNumElements = 0;
         char* lcBufPvVal = (char*) llBufPvVal;
+        llBufPvVal[0] = 0;
 
         // Read PV: (_sBldPvPostTrigger).FLNK
         string sBldPvPostTriggerFieldFLNK = _sBldPvPostTrigger + ".FLNK";
@@ -378,11 +383,15 @@ try
     if ( !_sBldPvPreTrigger.empty() )
     {
         char* lcBufPvVal = (char*) llBufPvVal;
+        llBufPvVal[0] = 0;
         
         // Set PV: (_sBldPvPreTrigger).FLNK = ""
         int iLenPvVal = _sBldPvPreTriggerPrevFLNK.length();
         strncpy( lcBufPvVal, _sBldPvPreTriggerPrevFLNK.c_str(), iLenPvVal );
-        string sBldPvPreTriggerFieldFLNK = _sBldPvPreTrigger + ".FLNK";
+        // If it has ".XXX" at the end, no need to append ".FLNK"!
+        string sBldPvPreTriggerFieldFLNK = 
+            (_sBldPvPreTrigger.find('.') == string::npos) ? _sBldPvPreTrigger + ".FLNK"
+                                                          : _sBldPvPreTrigger;
         if ( _iDebugLevel > 0 )
             printf( "Setting PV FLNK: %s = %s\n", sBldPvPreTriggerFieldFLNK.c_str(), 
               _sBldPvPreTriggerPrevFLNK.c_str() );
@@ -412,6 +421,7 @@ try
     if ( !_sBldPvPostTrigger.empty() )
     {
         char* lcBufPvVal = (char*) llBufPvVal;
+        llBufPvVal[0] = 0;
         
         // Set PV: (_sBldPvPostTrigger).FLNK = ""
         int iLenPvVal = _sBldPvPostTriggerPrevFLNK.length();
