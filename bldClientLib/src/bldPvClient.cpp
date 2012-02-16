@@ -49,6 +49,18 @@ bool BldIsStarted(int id)
     return EpicsBld::BldPvClientFactory::getSingletonBldPvClient(id).IsStarted();
 }
 
+int BldSetControl(int id, int on)
+{
+    if (on) {
+        if (!BldIsStarted(id))
+            return BldStart(id);
+    } else {
+        if (BldIsStarted(id))
+            return BldStop(id);
+    }
+    return 1;
+}
+
 int BldConfig(int id, const char* sAddr, unsigned short uPort, 
   unsigned int uMaxDataSize, const char* sInterfaceIp, unsigned int uSrcPyhsicalId, 
   unsigned int uDataType, const char* sBldPvPreTrigger, const char* sBldPvPostTrigger, 

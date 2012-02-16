@@ -86,6 +86,7 @@ extern "C"
 int BldStart(int id);
 int BldStop(int id);
 bool BldIsStarted(int id);
+int BldSetControl(int id, int on);
 
 int BldConfig( int id, const char* sAddr, unsigned short uPort, unsigned int uMaxDataSize, const char* sInterfaceIp, 
                unsigned int uSrcPyhsicalId, unsigned int uDataType, const char* sBldPvPreTrigger,

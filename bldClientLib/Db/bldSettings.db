@@ -13,3 +13,13 @@ record(sub,"$(IOC):bldPostTrigger")
     field(SNAM,"bldPostSubProcess")
     field(INPA, "$(BLDNO)")
 }
+
+record(sub,"$(IOC):bldControl")
+{
+    field(DESC, "Bld Control")
+    field(SCAN, "Passive")
+    field(INAM, "bldControlSubInit")
+    field(SNAM, "bldControlSubProcess")
+    field(INPA, "$(BLDNO)")
+    field(INPB, "0")
+}

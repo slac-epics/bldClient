@@ -21,6 +21,7 @@ extern "C"
 
 int bldPreSubDebug = 0;
 int bldPostSubDebug = 0;
+int bldControlSubDebug = 0;
 
 typedef long (*TFuncProcess)(subRecord *pSubrecord);
 
@@ -68,6 +69,26 @@ static long bldPostSubProcess(subRecord *pSubrecord)
 	return(0);
 }
 
+static long bldControlSubInit(subRecord *pSubrecord,TFuncProcess process)
+{
+	if (bldControlSubDebug)
+		printf("bldControlSubInit() : Record %s called bldControlSubInit(%p, %p)\n",
+					 pSubrecord->name, (void*) pSubrecord, (void*) process);
+          
+	return(0);
+}
+
+static long bldControlSubProcess(subRecord *pSubrecord)
+{
+	if (bldControlSubDebug)
+		printf("bldControlSubProcess() : Record %s called bldControlSubProcess(%p)\n",
+					 pSubrecord->name, (void*) pSubrecord); 
+    
+	BldSetControl( (int) pSubrecord->a, (int) pSubrecord->b );
+        
+	return(0);
+}
+
 /* Register these symbols for use by IOC code: */
 
 epicsExportAddress(int, bldPreSubDebug);
@@ -76,5 +97,8 @@ epicsRegisterFunction(bldPreSubProcess);
 epicsExportAddress(int, bldPostSubDebug);
 epicsRegisterFunction(bldPostSubInit);
 epicsRegisterFunction(bldPostSubProcess);
+epicsExportAddress(int, bldControlSubDebug);
+epicsRegisterFunction(bldControlSubInit);
+epicsRegisterFunction(bldControlSubProcess);
 
 } // extern "C"
