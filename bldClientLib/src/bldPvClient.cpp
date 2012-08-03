@@ -309,7 +309,7 @@ try
         }
 
         // Set PV: (_sBldPvPreTrigger).FLNK = _sBldPvPreSubRec
-        int iLenPvVal = _sBldPvPreSubRec.length();
+        int iLenPvVal = _sBldPvPreSubRec.length() + 1;
         strncpy( lcBufPvVal, _sBldPvPreSubRec.c_str(), iLenPvVal );
         if ( _iDebugLevel > 0 )
             printf( "Setting PV FLNK: %s = %s\n", sBldPvPreTriggerFieldFLNK.c_str(), 
@@ -355,7 +355,7 @@ try
         }
 
         // Set PV: (_sBldPvPostTrigger).FLNK = _sBldPvPostSubRec
-        int iLenPvVal = _sBldPvPostSubRec.length();
+        int iLenPvVal = _sBldPvPostSubRec.length() + 1;
         strncpy( lcBufPvVal, _sBldPvPostSubRec.c_str(), iLenPvVal );
         if ( _iDebugLevel > 0 )
             printf( "Setting PV FLNK: %s = %s\n", sBldPvPostTriggerFieldFLNK.c_str(), 
@@ -398,7 +398,7 @@ try
         llBufPvVal[0] = 0;
         
         // Set PV: (_sBldPvPreTrigger).FLNK = ""
-        int iLenPvVal = _sBldPvPreTriggerPrevFLNK.length();
+        int iLenPvVal = _sBldPvPreTriggerPrevFLNK.length() + 1;
         strncpy( lcBufPvVal, _sBldPvPreTriggerPrevFLNK.c_str(), iLenPvVal );
         // If it has ".XXX" at the end, no need to append ".FLNK"!
         string sBldPvPreTriggerFieldFLNK = 
@@ -436,7 +436,7 @@ try
         llBufPvVal[0] = 0;
         
         // Set PV: (_sBldPvPostTrigger).FLNK = ""
-        int iLenPvVal = _sBldPvPostTriggerPrevFLNK.length();
+        int iLenPvVal = _sBldPvPostTriggerPrevFLNK.length() + 1;
         strncpy( lcBufPvVal, _sBldPvPostTriggerPrevFLNK.c_str(), iLenPvVal );
         string sBldPvPostTriggerFieldFLNK = _sBldPvPostTrigger + ".FLNK";
         if ( _iDebugLevel > 0 )
