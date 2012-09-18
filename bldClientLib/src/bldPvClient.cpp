@@ -11,6 +11,7 @@
 #include <registryFunction.h>
 #include <subRecord.h>
 #include <epicsExport.h>
+#include <epicsTime.h>
 #include <dbAddr.h>
 #include <dbAccess.h>
 #include <dbTest.h>
@@ -19,6 +20,9 @@
 #include "bldNetworkClient.h"
 #include "bldClientSub.h"
 #include "bldPacket.h"
+
+/* This is a newer define in epicsTime.h, but not in 3.14.9. */
+#define POSIX_TIME_AT_EPICS_EPOCH 631152000u
 
 /*
  * Global C function definitions
@@ -162,6 +166,7 @@ private:
     string          _sBldPvPreTrigger, _sBldPvPostTrigger, _sBldPvFiducial;
     string          _sBldPvList, _sBldPvPreTriggerPrevFLNK, _sBldPvPostTriggerPrevFLNK;
     unsigned int    _uFiducialIdCur;
+    epicsTimeStamp  _uFiducialTime;
     
      BldPvClientBasic(); /// Singelton. No explicit instantiation
      ~BldPvClientBasic();
@@ -183,7 +188,7 @@ private:
     
     /* PV access and report */    
     static int readPv(const char *sVariableName, int iBufferSize, void* pBuffer, 
-      short* piValueType, long* plNumElements );
+      short* piValueType, long* plNumElements, epicsTimeStamp *ts );
     static int writePv(const char *sVariableName, const void* pBuffer, 
       short iValueType = DBR_STRING, long lNumElements = 1);
     static int printPv(const char *sVariableName, void* pBuffer, 
@@ -288,7 +293,7 @@ try
             (_sBldPvPreTrigger.find('.') == string::npos) ? _sBldPvPreTrigger + ".FLNK"
                                                           : _sBldPvPreTrigger;
         if ( 
-          readPv( sBldPvPreTriggerFieldFLNK.c_str(), sizeof(llBufPvVal), llBufPvVal, &iFieldType, &lNumElements )
+          readPv( sBldPvPreTriggerFieldFLNK.c_str(), sizeof(llBufPvVal), llBufPvVal, &iFieldType, &lNumElements, NULL )
           != 0 )
             throw string("readPv(") + sBldPvPreTriggerFieldFLNK + ") Failed\n";
         _sBldPvPreTriggerPrevFLNK.assign(lcBufPvVal);
@@ -334,7 +339,7 @@ try
         // Read PV: (_sBldPvPostTrigger).FLNK
         string sBldPvPostTriggerFieldFLNK = _sBldPvPostTrigger + ".FLNK";
         if ( 
-             readPv( sBldPvPostTriggerFieldFLNK.c_str(), sizeof(llBufPvVal), llBufPvVal, &iFieldType, &lNumElements )
+             readPv( sBldPvPostTriggerFieldFLNK.c_str(), sizeof(llBufPvVal), llBufPvVal, &iFieldType, &lNumElements, NULL )
              != 0 )
             throw string("readPv(") + sBldPvPostTriggerFieldFLNK + ") Failed\n";
         _sBldPvPostTriggerPrevFLNK.assign(lcBufPvVal);
@@ -512,7 +517,7 @@ try
     if ( _sBldPvFiducial.length() > 0 )
     {
         if ( 
-            readPv( _sBldPvFiducial.c_str(), sizeof(llBufPvVal), llBufPvVal, &iFieldType, &lNumElements )
+            readPv( _sBldPvFiducial.c_str(), sizeof(llBufPvVal), llBufPvVal, &iFieldType, &lNumElements, &_uFiducialTime )
             != 0 )
             throw string("read Fiducial Pv (") + _sBldPvFiducial + ") Failed\n";
                     
@@ -562,9 +567,14 @@ try
     
     /* Set bld packet header */    
     struct timespec ts;
+#if 0
     int iStatus = clock_gettime (CLOCK_REALTIME, &ts);
     if (iStatus)
         throw string( "clock_gettime() Failed\n" );
+#endif
+    /* New regime - Use the fiducial timestamp! */
+    ts.tv_sec  = _uFiducialTime.secPastEpoch + POSIX_TIME_AT_EPICS_EPOCH;
+    ts.tv_nsec = _uFiducialTime.nsec;
         
     unsigned int uFiducialId = _uFiducialIdCur;
     if ( _iDebugLevel > 2 )
@@ -594,7 +604,7 @@ try
         if ( _iDebugLevel > 2 )
             printf( "Reading PV %s...\n", sBldPv.c_str());
         if ( 
-          readPv( sBldPv.c_str(), sizeof(llBufPvVal), llBufPvVal, &iFieldType, &lNumElements )
+          readPv( sBldPv.c_str(), sizeof(llBufPvVal), llBufPvVal, &iFieldType, &lNumElements, NULL )
           != 0 )
             throw string("readPv(") + sBldPv + ") Failed\n";
         
@@ -724,7 +734,7 @@ int BldPvClientBasic::_splitPvList( const string& sBldPvList, std::vector<string
     return 0;
 }
 
-int BldPvClientBasic::readPv(const char *sVariableName, int iBufferSize, void* pBuffer, short* piValueType, long* plNumElements )
+int BldPvClientBasic::readPv(const char *sVariableName, int iBufferSize, void* pBuffer, short* piValueType, long* plNumElements, epicsTimeStamp *ts )
 {   
     if (sVariableName == NULL || *sVariableName == 0 || pBuffer == NULL || piValueType == NULL || plNumElements == NULL )
     {
@@ -745,6 +755,9 @@ int BldPvClientBasic::readPv(const char *sVariableName, int iBufferSize, void* p
         printf("readPv(): dbNameToAddr(%s) failed. Status  = %d\n", sVariableName, iStatus);
         return(iStatus);
     }
+
+    if (ts)
+        *ts = dbaddrVariable.precord->time;
 
     long lNumElements = std::min( (int) dbaddrVariable.no_elements,
       (iBufferSize/dbaddrVariable.field_size) );
