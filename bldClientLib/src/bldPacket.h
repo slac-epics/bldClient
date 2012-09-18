@@ -14,8 +14,8 @@ public:
     /* 
      * Memory Mapped Data
      */
-    uint32_t uSecs;
     uint32_t uNanoSecs;
+    uint32_t uSecs;
     uint32_t uMBZ1;
     uint32_t uFiducialId;
     uint32_t uMBZ2;
