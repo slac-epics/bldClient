@@ -89,7 +89,7 @@ bool BldIsStarted(int id);
 int BldSetControl(int id, int on);
 
 int BldConfig( int id, const char* sAddr, unsigned short uPort, unsigned int uMaxDataSize, const char* sInterfaceIp, 
-               unsigned int uSrcPyhsicalId, unsigned int uDataType, const char* sBldPvPreTrigger,
+               unsigned int uSrcPhysicalId, unsigned int uXtcDataType, const char* sBldPvPreTrigger,
                const char* sBldPvPostTrigger, const char* sBldPvFiducial, const char* sBldPvList );
 void BldShowConfig(int id);
 
@@ -100,6 +100,10 @@ int BldSendData(int id);
 
 void BldSetDebugLevel(int id, int iDebugLevel); 
 int BldGetDebugLevel(int id); 
+
+#define	FIDUCIAL_NOT_SET	0x20000
+#define FIDUCIAL_INVALID	0x1FFFF
+
 }
 
 #endif

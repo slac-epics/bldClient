@@ -40,12 +40,29 @@ public:
      
     // Imported from PDS repository: pdsdata/xtc/BldInfo.hh : BldInfo::Type
     // Note that this is only the ones *we* handle!  Max is set large for the future!
-    enum BldTypeId { EBeam, PhaseCavity, FEEGasDetEnergy, NumberOfBldTypeId=100 }; 
+    enum BldTypeId	{	EBeam, PhaseCavity, FEEGasDetEnergy,
+						Nh2Sb1Ipm01,  
+						HxxUm6Imb01, HxxUm6Imb02,
+						HfxDg2Imb01, HfxDg2Imb02,
+						XcsDg3Imb03, XcsDg3Imb04,
+						HfxDg3Imb01, HfxDg3Imb02,
+						HxxDg1Cam,   HfxDg2Cam,
+						HfxDg3Cam,   XcsDg3Cam,
+						HfxMonCam,
+						HfxMonImb01, HfxMonImb02,
+						HfxMonImb03,
+						MecLasEm01, MecTctrPip01,
+						MecTcTrDio01,
+						MecXt2Ipm02, MecXt2Ipm03, 
+						MecHxmIpm01,
+						GMD,
+						NumberOfBldTypeId=100 }; 
     /*
        EBeam bld does not use this module
      */
  
     // Imported from PDS repository: pdsdata/xtc/TypeId.hh : TypId::Type
+	// /reg/g/pcds/dist/pds/sxr/princeton_tomy/pdsdata/xtc/TypeId.hh
     // Note that this is only the ones *we* handle!  Max is set large for the future!
     enum XtcDataType 
     {
@@ -66,7 +83,55 @@ public:
         Id_FEEGasDetEnergy  = 14,
         Id_EBeam            = 15,
         Id_PhaseCavity      = 16,
-        NumberOfXtcDataType=200
+		Id_PrincetonFrame	= 17,
+		Id_PrincetonConfig	= 18,
+		Id_EvrData			= 19,
+		Id_FrameFccdConfig	= 20,
+		Id_FccdConfig		= 21,
+		Id_IpimbData		= 22,
+		Id_IpimbConfig		= 23,
+		Id_EncoderData		= 24,
+		Id_EncoderConfig	= 25,
+		Id_EvrIOConfig		= 26,
+		Id_PrincetonInfo	= 27,
+		Id_CspadElement		= 28,
+		Id_CspadConfig		= 29,
+		Id_IpmFexConfig		= 30,  // LUSI Diagnostics
+		Id_IpmFex			= 31,
+		Id_DiodeFexConfig	= 32,
+		Id_DiodeFex			= 33,
+		Id_PimImageConfig	= 34,
+		Id_SharedIpimb		= 35,
+		Id_AcqTdcConfig		= 36,
+		Id_AcqTdcData		= 37,
+		Id_Index			= 38,
+		Id_XampsConfig		= 39,
+		Id_XampsElement		= 40,
+		Id_Cspad2x2Element	= 41,
+		Id_SharedPim		= 42,
+		Id_Cspad2x2Config	= 43,
+		Id_FexampConfig		= 44,
+		Id_FexampElement	= 45,
+		Id_Gsc16aiConfig	= 46,
+		Id_Gsc16aiData		= 47,
+		Id_PhasicsConfig	= 48,
+		Id_TimepixConfig	= 49,
+		Id_TimepixData		= 50,
+		Id_CspadCompressedElement	= 51,
+		Id_OceanOpticsConfig	= 52,
+		Id_OceanOpticsData	= 53,
+		Id_EpicsConfig		= 54,
+		Id_FliConfig		= 55,
+		Id_FliFrame			= 56,
+		Id_QuartzConfig		= 57,
+		Reserved1			= 58,	// previously Id_CompressedFrame        : no corresponding class
+		Reserved2			= 59,	// previously Id_CompressedTimePixFrame : no corresponding class
+		Id_AndorConfig		= 60,
+		Id_AndorFrame		= 61,
+		Id_UsdUsbData		= 62,
+		Id_UsdUsbConfig		= 63,
+		Id_GMD				= 64,
+        NumberOfXtcDataType	= 200
     };
 
     /*
@@ -145,5 +210,10 @@ public:
 };
 
 }
+
+extern "C" void BldRegister(	unsigned int	uPhysicalId,
+								uint32_t		uDataType,
+								unsigned int	pktsize,
+                            	int (*func)(int iPvIndex, void* pPvValue, void* payload) );
 
 #endif

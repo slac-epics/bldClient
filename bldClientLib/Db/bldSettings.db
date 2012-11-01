@@ -1,4 +1,4 @@
-record(sub,"$(IOC):bldPreTrigger")
+record(sub,"$(BLD):bldPreTrigger")
 {
     field(DESC, "Bld Pre-computation Trigger")
     field(INAM,"bldPreSubInit")
@@ -6,15 +6,34 @@ record(sub,"$(IOC):bldPreTrigger")
     field(INPA, "$(BLDNO)")
 }
 
-record(sub,"$(IOC):bldPostTrigger")
+record(sub,"$(BLD):bldPostTrigger")
 {
     field(DESC, "Bld Post-computation Trigger")
     field(INAM,"bldPostSubInit")
     field(SNAM,"bldPostSubProcess")
     field(INPA, "$(BLDNO)")
+    field(FLNK, "$(BLD):bldCount" )
 }
 
-record(sub,"$(IOC):bldControl")
+record( calc, "$(BLD):bldCount" )
+{
+    field( DESC, "Bld Packet Counter" )
+    field( INPA, "$(BLD):bldCount" )
+	field( CALC, "A+1" )
+}
+
+record( calc, "$(BLD):bldRate" )
+{
+    field( DESC, "Bld Packet Rate" )
+	field( SCAN, "1 second" )
+    field( INPA, "$(BLD):bldCount" )
+    field( INPB, "$(BLD):bldRate.LA" )
+	field( CALC, "A-B" )
+	field( LOW,  "0" )
+	field( LSV,  "MINOR" )
+}
+
+record(sub,"$(BLD):bldControl")
 {
     field(DESC, "Bld Control")
     field(SCAN, "Passive")

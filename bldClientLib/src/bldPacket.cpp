@@ -107,6 +107,51 @@ int setPvValueFEEGasDetEnergy( int iPvIndex, void* pPvValue, void *payload )
     return 0;
 }
 
+int setPvValueGMD( int iPvIndex, void* pPvValue, void *payload )
+{
+	char		*	pDstPvString = (char *) payload;
+	if ( iPvIndex == 0 )
+	{
+		const char	*	pSrcPvValue = (char *) pPvValue;
+		strncpy( pDstPvString, pSrcPvValue, 32 );
+	}
+	else
+	{
+		double	*	pSrcPvValue = (double*) pPvValue;
+		double	*	pDstPvValue = ((double*) (pDstPvString+32)) + (iPvIndex-1);
+
+		*pDstPvValue = BldPacketHeader::setdoubleLE(*pSrcPvValue);
+	}
+    return 0;
+}
+
+// GMD Packet: 32 byte string, 15 doubles
+//	cPclass BldDataGMDV0
+//	{
+//		public:
+//		enum	{	version	=	0	};
+//	
+//		char	strGasType[32];			// Gas Type
+//		double	fPressure;				// Pressure from Spinning Rotor Gauge
+//		double	fTemperature;			// Temp from PT100
+//		double	fCurrent;				// Current from Keithley Electrometer
+//		double	fHvMeshElectron;		// HV Mesh Electron
+//		double	fHvMeshIon;				// HV Mesh Ion
+//		double	fHvMultIon;				// HV Mult Ion
+//		double	fChargeQ;				// Charge Q
+//		double	fPhotonEnergy;			// Photon Energy
+//		double	fMultPulseIntensity;	// Pulse Intensity derived from Electron Multiplier
+//		double	fKeithleyPulseIntensity;// Pulse Intensity derived from ION cup current
+//		double	fPulseEnergy;			// Pulse Energy derived from Electron Multiplier
+//		double	fPulseEnergyFEE;		// Pulse Energy from FEE Gas Detector
+//		double	fTransmission;			// Transmission derived from Electron Multiplier
+//		double	fTransmissionFEE;		// Transmission from FEE Gas Detector
+//		double	fSpare6;				// Spare 6
+//	
+//		int print() const;
+//	};
+//
+const size_t	sizeGMD = 32 + sizeof(double)*15;
 void BldPacketHeader::Initialize(void)
 {
     if (!init_done) {
@@ -114,6 +159,7 @@ void BldPacketHeader::Initialize(void)
         Register(EBeam,           Any,                0,                &setPvValuePulseEnergy);
         Register(PhaseCavity,     Id_PhaseCavity,     sizeof(double)*4, &setPvValuePhaseCavity);
         Register(FEEGasDetEnergy, Id_FEEGasDetEnergy, sizeof(double)*4, &setPvValueFEEGasDetEnergy);
+        Register(GMD,			  Id_GMD,			  sizeGMD,			&setPvValueGMD );
     }
 }
 

@@ -62,12 +62,12 @@ int BldSetControl(int id, int on)
 }
 
 int BldConfig(int id, const char* sAddr, unsigned short uPort, 
-  unsigned int uMaxDataSize, const char* sInterfaceIp, unsigned int uSrcPyhsicalId, 
-  unsigned int uDataType, const char* sBldPvPreTrigger, const char* sBldPvPostTrigger, 
+  unsigned int uMaxDataSize, const char* sInterfaceIp, unsigned int uSrcPhysicalId, 
+  unsigned int uxtcDataType, const char* sBldPvPreTrigger, const char* sBldPvPostTrigger, 
   const char* sBldPvFiducial, const char* sBldPvList )
 {
     return EpicsBld::BldPvClientFactory::getSingletonBldPvClient(id).bldConfig(
-            sAddr, uPort, uMaxDataSize, sInterfaceIp, uSrcPyhsicalId, uDataType, sBldPvPreTrigger,
+            sAddr, uPort, uMaxDataSize, sInterfaceIp, uSrcPhysicalId, uxtcDataType, sBldPvPreTrigger,
             sBldPvPostTrigger, sBldPvFiducial, sBldPvList);
 }
 
@@ -129,7 +129,7 @@ public:
     virtual bool IsStarted() const;
     virtual int bldConfig( const char* sAddr, unsigned short uPort,
       unsigned int uMaxDataSize, const char* sInterfaceIp, 
-      unsigned int uSrcPyhsicalId, unsigned int uDataType, 
+      unsigned int uSrcPhysicalId, unsigned int uxtcDataType, 
       const char* sBldPvPreTrigger, const char* sBldPvPostTrigger,
       const char* sBldPvFiducial, const char* sBldPvList );
     virtual void bldShowConfig();
@@ -158,12 +158,12 @@ private:
     unsigned short  _uBldServerPort;
     unsigned int    _uMaxDataSize;
     string          _sBldInterfaceIp;    
-    unsigned int    _uSrcPyhsicalId, _uDataType;
+    unsigned int    _uSrcPhysicalId, _uxtcDataType;
     string          _sBldPvPreTrigger, _sBldPvPostTrigger, _sBldPvFiducial;
     string          _sBldPvList, _sBldPvPreTriggerPrevFLNK, _sBldPvPostTriggerPrevFLNK;
     unsigned int    _uFiducialIdCur;
     
-     BldPvClientBasic(); /// Singelton. No explicit instantiation
+     BldPvClientBasic(); /// Singleton. No explicit instantiation
      ~BldPvClientBasic();
           
      ///  Disable value semantics. No definitions (function bodies).
@@ -229,7 +229,7 @@ BldPvClientBasic& BldPvClientBasic::getSingletonObject(int id)
 /* public member functions */
 
 BldPvClientBasic::BldPvClientBasic() : _bBldStarted(false), _iDebugLevel(0),
-  _uBldServerAddr(0), _uBldServerPort(0), _uMaxDataSize(0), _uSrcPyhsicalId(0), _uDataType(0)
+  _uBldServerAddr(0), _uBldServerPort(0), _uMaxDataSize(0), _uSrcPhysicalId(0), _uxtcDataType(0)
 {
 }
 
@@ -299,7 +299,7 @@ try
         else if ( !_sBldPvPreTriggerPrevFLNK.empty() )
         {
             string sBldPvSubRecFieldFLNK = _sBldPvPreSubRec + ".FLNK";
-            if ( _iDebugLevel > 0 )
+            if ( _iDebugLevel >= 1 )
                 printf( "Setting PV FLNK: %s = %s\n", sBldPvSubRecFieldFLNK.c_str(), 
                   _sBldPvPreTriggerPrevFLNK.c_str() );
             if ( 
@@ -311,7 +311,7 @@ try
         // Set PV: (_sBldPvPreTrigger).FLNK = _sBldPvPreSubRec
         int iLenPvVal = _sBldPvPreSubRec.length();
         strncpy( lcBufPvVal, _sBldPvPreSubRec.c_str(), iLenPvVal );
-        if ( _iDebugLevel > 0 )
+        if ( _iDebugLevel >= 1 )
             printf( "Setting PV FLNK: %s = %s\n", sBldPvPreTriggerFieldFLNK.c_str(), 
               _sBldPvPreSubRec.c_str() );
         if ( 
@@ -345,7 +345,7 @@ try
         else if ( !_sBldPvPostTriggerPrevFLNK.empty() )
         {
             string sBldPvSubRecFieldFLNK = _sBldPvPostSubRec + ".FLNK";
-            if ( _iDebugLevel > 0 )
+            if ( _iDebugLevel >= 1 )
                 printf( "Setting PV FLNK: %s = %s\n", sBldPvSubRecFieldFLNK.c_str(), 
                         _sBldPvPostTriggerPrevFLNK.c_str() );
             if ( 
@@ -357,7 +357,7 @@ try
         // Set PV: (_sBldPvPostTrigger).FLNK = _sBldPvPostSubRec
         int iLenPvVal = _sBldPvPostSubRec.length();
         strncpy( lcBufPvVal, _sBldPvPostSubRec.c_str(), iLenPvVal );
-        if ( _iDebugLevel > 0 )
+        if ( _iDebugLevel >= 1 )
             printf( "Setting PV FLNK: %s = %s\n", sBldPvPostTriggerFieldFLNK.c_str(), 
                     _sBldPvPostSubRec.c_str() );
         if ( 
@@ -404,7 +404,7 @@ try
         string sBldPvPreTriggerFieldFLNK = 
             (_sBldPvPreTrigger.find('.') == string::npos) ? _sBldPvPreTrigger + ".FLNK"
                                                           : _sBldPvPreTrigger;
-        if ( _iDebugLevel > 0 )
+        if ( _iDebugLevel >= 1 )
             printf( "Setting PV FLNK: %s = %s\n", sBldPvPreTriggerFieldFLNK.c_str(), 
               _sBldPvPreTriggerPrevFLNK.c_str() );
         if ( 
@@ -416,7 +416,7 @@ try
         {
             lcBufPvVal[0] = 0; // set lcBufPvVal = ""
             string sBldPvSubRecFieldFLNK = _sBldPvPreSubRec + ".FLNK";
-            if ( _iDebugLevel > 0 )
+            if ( _iDebugLevel >= 1 )
                 printf( "Setting PV FLNK: %s = 0\n", sBldPvSubRecFieldFLNK.c_str() );            
             if ( 
               writePv( sBldPvSubRecFieldFLNK.c_str(), lcBufPvVal )
@@ -439,7 +439,7 @@ try
         int iLenPvVal = _sBldPvPostTriggerPrevFLNK.length();
         strncpy( lcBufPvVal, _sBldPvPostTriggerPrevFLNK.c_str(), iLenPvVal );
         string sBldPvPostTriggerFieldFLNK = _sBldPvPostTrigger + ".FLNK";
-        if ( _iDebugLevel > 0 )
+        if ( _iDebugLevel >= 1 )
             printf( "Setting PV FLNK: %s = %s\n", sBldPvPostTriggerFieldFLNK.c_str(), 
                     _sBldPvPostTriggerPrevFLNK.c_str() );
         if ( 
@@ -451,7 +451,7 @@ try
         {
             lcBufPvVal[0] = 0; // set lcBufPvVal = ""
             string sBldPvSubRecFieldFLNK = _sBldPvPostSubRec + ".FLNK";
-            if ( _iDebugLevel > 0 )
+            if ( _iDebugLevel >= 1 )
                 printf( "Setting PV FLNK: %s = 0\n", sBldPvSubRecFieldFLNK.c_str() );            
             if ( 
                  writePv( sBldPvSubRecFieldFLNK.c_str(), lcBufPvVal )
@@ -508,19 +508,20 @@ try
     short int iFieldType = 0;
     long lNumElements = 0;
     
-    unsigned int uFiducialId = 0;
+    unsigned int uFiducialId = 0x1FFFF;
     if ( _sBldPvFiducial.length() > 0 )
     {
         if ( 
             readPv( _sBldPvFiducial.c_str(), sizeof(llBufPvVal), llBufPvVal, &iFieldType, &lNumElements )
             != 0 )
-            throw string("read Fiducial Pv (") + _sBldPvFiducial + ") Failed\n";
+            throw string("readPv(") + _sBldPvFiducial + ") Failed to read Fiducial PV!\n";
                     
         uFiducialId  = *(unsigned long int*) llBufPvVal;
     }
-    
+ 
     _uFiducialIdCur = uFiducialId;
-    
+    if ( _uFiducialIdCur >= FIDUCIAL_INVALID )
+        throw string( "Invalid fiducial read from " + _sBldPvFiducial + "\n" );
 }
 catch (string& sError)
 {
@@ -529,8 +530,8 @@ catch (string& sError)
     iRetErrorCode = 2;
 }
         
-    if ( _iDebugLevel > 2 )
-        printf( "Preparing Data: Get Fiducial Id %u\n", _uFiducialIdCur ); 
+    if ( _iDebugLevel >= 3 )
+        printf( "Preparing Data: Get Fiducial Id 0x%05X\n", _uFiducialIdCur ); 
         
     return iRetErrorCode;
     
@@ -548,10 +549,6 @@ try
     if ( _apBldNetworkClient.get() == NULL )
         throw string( "BldNetworkClient is uninitialized\n" );
 
-    if ( _iDebugLevel > 1 )
-        printf( "Sending Bld to Addr %x Port %d Interface %s PvList %s\n",
-          _uBldServerAddr, _uBldServerPort, _sBldInterfaceIp.c_str(), _sBldPvList.c_str() );
-        
     short int iFieldType = 0;
     long lNumElements = 0;
 
@@ -559,7 +556,7 @@ try
     _splitPvList( _sBldPvList, vsBldPv );
     
     BldPacketHeader* pBldPacketHeader = (BldPacketHeader*) lcMsgBuffer;
-    
+
     /* Set bld packet header */    
     struct timespec ts;
     int iStatus = clock_gettime (CLOCK_REALTIME, &ts);
@@ -567,13 +564,24 @@ try
         throw string( "clock_gettime() Failed\n" );
         
     unsigned int uFiducialId = _uFiducialIdCur;
-    if ( _iDebugLevel > 2 )
-        printf( "Sending Data: Use Fiducial Id %u\n", uFiducialId ); 
-    
+    _uFiducialIdCur = FIDUCIAL_NOT_SET;
+    if ( _iDebugLevel >= 2 )
+	{
+		if ( uFiducialId >= FIDUCIAL_NOT_SET )
+		{
+			// throw string( "Fiducial not set.  Did your bldPreTrigger PV process?\n" );
+			printf( "Fiducial not set.  Did your bldPreTrigger PV process?\n" );
+		}
+        printf( "Sending Bld to Addr %x Port %d Interface %s Fiducial 0x%05X\n",
+          _uBldServerAddr, _uBldServerPort, _sBldInterfaceIp.c_str(), uFiducialId ); 
+	}
+    if ( _iDebugLevel >= 3 )
+        printf( "PvList %s\n", _sBldPvList.c_str() );
+ 
     const unsigned int uDamage = 0;
     
     new ( pBldPacketHeader ) BldPacketHeader( sizeof(lcMsgBuffer), 
-      ts.tv_sec, ts.tv_nsec, uFiducialId, uDamage, _uSrcPyhsicalId, _uDataType);
+      ts.tv_sec, ts.tv_nsec, uFiducialId, uDamage, _uSrcPhysicalId, _uxtcDataType);
     //char* pcMsgBuffer = (char*) (pBldPacketHeader + 1);
     //unsigned int uDataSize = sizeof(BldPacketHeader);
     //const int iMaxMsgSize = sizeof(lcMsgBuffer);
@@ -591,14 +599,14 @@ try
         //}
         
         const string& sBldPv = *itsBldPv;
-        if ( _iDebugLevel > 2 )
+        if ( _iDebugLevel >= 3 )
             printf( "Reading PV %s...\n", sBldPv.c_str());
         if ( 
           readPv( sBldPv.c_str(), sizeof(llBufPvVal), llBufPvVal, &iFieldType, &lNumElements )
           != 0 )
             throw string("readPv(") + sBldPv + ") Failed\n";
         
-        //if ( _iDebugLevel > 2)
+        //if ( _iDebugLevel >= 3)
         //    printf( "Msg Buffer before PV %s Available Size %d: %s\n", sBldPv.c_str(), iMaxMsgSize - uDataSize, lcMsgBuffer);
         
         int iFail = pBldPacketHeader->setPvValue( iPvIndex, llBufPvVal );
@@ -615,7 +623,7 @@ try
         //pcMsgBuffer += iNewMsgSize;
         //uDataSize += iNewMsgSize;
         
-        //if ( _iDebugLevel > 2 )
+        //if ( _iDebugLevel >= 3 )
         //    printf( "Msg Buffer after PV %s AvaSize %d: %s\n", sBldPv.c_str(), iMaxMsgSize - uDataSize, lcMsgBuffer);        
     }
     
@@ -643,7 +651,7 @@ bool BldPvClientBasic::IsStarted() const
 }
 
 int BldPvClientBasic::bldConfig( const char* sAddr, unsigned short uPort, 
-  unsigned int uMaxDataSize, const char* sInterfaceIp, unsigned int uSrcPyhsicalId, unsigned int uDataType, 
+  unsigned int uMaxDataSize, const char* sInterfaceIp, unsigned int uSrcPhysicalId, unsigned int uxtcDataType, 
   const char* sBldPvPreTrigger, const char* sBldPvPostTrigger, const char* sBldPvFiducial, const char* sBldPvList )
 {   
     BldPacketHeader::Initialize();
@@ -668,8 +676,8 @@ int BldPvClientBasic::bldConfig( const char* sAddr, unsigned short uPort,
     _uBldServerPort = uPort;    
     _uMaxDataSize = uMaxDataSize;
     _sBldInterfaceIp.assign(sInterfaceIp == NULL? "" : sInterfaceIp);  
-    _uSrcPyhsicalId = uSrcPyhsicalId;
-    _uDataType = uDataType;
+    _uSrcPhysicalId = uSrcPhysicalId;
+    _uxtcDataType = uxtcDataType;
     _sBldPvPreTrigger.assign(sBldPvPreTrigger);
     _sBldPvPostTrigger.assign(sBldPvPostTrigger);
     _sBldPvFiducial.assign(sBldPvFiducial); 
@@ -687,12 +695,16 @@ void BldPvClientBasic::bldShowConfig()
     printf( "  Configurable parameters:\n"
       "    Server Addr %u.%u.%u.%u  Port %d  MaxDataSize %u MCastIF %s\n"
       "    Source Id %d  Data Type %d\n"
-      "    PvPreTrigger <%s>  PvPostTrigger <%s> PvFiducial <%s>\n"
+      "    PvPreTrigger <%s>\n"
+	  "    PvPostTrigger <%s>\n"
+	  "    PvFiducial <%s>\n"
       "    PvList <%s>\n",
       pcAddr[0], pcAddr[1], pcAddr[2], pcAddr[3],
       _uBldServerPort, _uMaxDataSize, _sBldInterfaceIp.c_str(), 
-      _uSrcPyhsicalId, _uDataType, _sBldPvPreTrigger.c_str(), _sBldPvPostTrigger.c_str(), _sBldPvFiducial.c_str(), _sBldPvList.c_str() );
-            
+      _uSrcPhysicalId, _uxtcDataType,
+	  _sBldPvPreTrigger.c_str(), _sBldPvPostTrigger.c_str(),
+	  _sBldPvFiducial.c_str(),   _sBldPvList.c_str() );
+
     printf( "  Internal Settings:\n"
       "    Pre  Subroutine Record <%s>  PvPreTrigger.FLNK <%s>\n"
       "    Post Subroutine Record <%s>  PvPostTrigger.FLNK <%s>\n"
@@ -700,6 +712,18 @@ void BldPvClientBasic::bldShowConfig()
       _sBldPvPreSubRec.c_str(), _sBldPvPreTriggerPrevFLNK.c_str(),
       _sBldPvPostSubRec.c_str(), _sBldPvPostTriggerPrevFLNK.c_str(),
       _iDebugLevel );      
+	if ( _sBldPvPreTrigger == _sBldPvPreSubRec )
+	{
+		printf( "WARNING: PvPreTrigger is same PV as %s!\n", _sBldPvPreSubRec.c_str() );
+		printf( "Normally, PvPreTrigger should be the name of a local PV\n"
+				"that processes when the fiducial is ready to fetch.\n" );
+	}
+	if ( _sBldPvPostTrigger == _sBldPvPostSubRec )
+	{
+		printf( "WARNING: PvPostTrigger is same PV as %s!\n", _sBldPvPostSubRec.c_str() );
+		printf( "Normally, PvPostTrigger should be the name of a local PV\n"
+				"that you want to process after the BLD data has been sent.\n" );
+	}
 }
 
 /*
@@ -724,15 +748,21 @@ int BldPvClientBasic::_splitPvList( const string& sBldPvList, std::vector<string
     return 0;
 }
 
-int BldPvClientBasic::readPv(const char *sVariableName, int iBufferSize, void* pBuffer, short* piValueType, long* plNumElements )
-{   
-    if (sVariableName == NULL || *sVariableName == 0 || pBuffer == NULL || piValueType == NULL || plNumElements == NULL )
+int BldPvClientBasic::readPv(
+	const char	*	sVariableName,
+	int				iBufferSize,
+	void		*	pBuffer,
+	short		*	piValueType,
+	long		*	plNumElements	)
+{
+    if (	sVariableName == NULL || *sVariableName == 0
+		||	pBuffer == NULL || piValueType == NULL || plNumElements == NULL )
     {
         printf( "readPv(): Invalid parameter\n" );
         return 1;
     }
     
-    if ( reinterpret_cast<unsigned long>(pBuffer) & 0x3 != 0  )
+    if ( (reinterpret_cast<unsigned long>(pBuffer) & 0x3) != 0  )
     {
         printf( "readPv(): Buffer should be aligned in 32 bits boundaries\n" );
         return 2;
@@ -742,7 +772,7 @@ int BldPvClientBasic::readPv(const char *sVariableName, int iBufferSize, void* p
     int iStatus = dbNameToAddr(sVariableName,&dbaddrVariable);  
     if ( iStatus != 0 )
     {
-        printf("readPv(): dbNameToAddr(%s) failed. Status  = %d\n", sVariableName, iStatus);
+        printf("readPv(): dbNameToAddr(%s) failed. Status  = 0x%X\n", sVariableName, iStatus);
         return(iStatus);
     }
 
@@ -761,7 +791,7 @@ int BldPvClientBasic::readPv(const char *sVariableName, int iBufferSize, void* p
           
     if ( iStatus != 0 )
     {
-        printf("readPv(): dbGetField(%s) failed. Status  = %d\n", sVariableName, iStatus);
+        printf("readPv(): dbGetField(%s) failed. Status  = 0x%X\n", sVariableName, iStatus);
         return(iStatus);
     }
         
@@ -779,7 +809,7 @@ int BldPvClientBasic::writePv(const char *sVariableName, const void* pBuffer, sh
         return 1;
     }
     
-    if ( reinterpret_cast<unsigned long>(pBuffer) & 0x3 != 0  )
+    if ( (reinterpret_cast<unsigned long>(pBuffer) & 0x3) != 0  )
     {
         printf( "writePv(): Buffer should be aligned in 32 bits boundaries\n" );
         return 2;
