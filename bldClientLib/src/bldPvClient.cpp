@@ -562,24 +562,27 @@ try
     int iStatus = clock_gettime (CLOCK_REALTIME, &ts);
     if (iStatus)
         throw string( "clock_gettime() Failed\n" );
-        
+    
+	// Get the current fiducial id and check to
+	// see if it's been set by the bldPreTrigger.
     unsigned int uFiducialId = _uFiducialIdCur;
     _uFiducialIdCur = FIDUCIAL_NOT_SET;
-    if ( _iDebugLevel >= 2 )
+	if ( uFiducialId >= FIDUCIAL_INVALID )
 	{
-		if ( uFiducialId >= FIDUCIAL_NOT_SET )
+		static unsigned long	msgCount	= 0;
+
+		if ( (msgCount++ % 10000) || ( _iDebugLevel >= 2 ) )
 		{
-			// throw string( "Fiducial not set.  Did your bldPreTrigger PV process?\n" );
-			printf( "Fiducial not set.  Did your bldPreTrigger PV process?\n" );
+    		if ( _uFiducialIdCur == FIDUCIAL_NOT_SET )
+				throw string( "Fiducial not set.  Did your bldPreTrigger PV process?\n" );
+			else
+				throw string( "Invalid Fiducial 0x1FFFF\n" );
 		}
-        printf( "Sending Bld to Addr %x Port %d Interface %s Fiducial 0x%05X\n",
-          _uBldServerAddr, _uBldServerPort, _sBldInterfaceIp.c_str(), uFiducialId ); 
+    	return 2;
 	}
-    if ( _iDebugLevel >= 3 )
-        printf( "PvList %s\n", _sBldPvList.c_str() );
  
+ 	// Create a BldPacketHeader
     const unsigned int uDamage = 0;
-    
     new ( pBldPacketHeader ) BldPacketHeader( sizeof(lcMsgBuffer), 
       ts.tv_sec, ts.tv_nsec, uFiducialId, uDamage, _uSrcPhysicalId, _uxtcDataType);
     //char* pcMsgBuffer = (char*) (pBldPacketHeader + 1);
@@ -591,13 +594,6 @@ try
     for ( std::vector<string>::const_iterator itsBldPv = vsBldPv.begin();
       itsBldPv != vsBldPv.end(); itsBldPv++, iPvIndex++ )
     {
-        //// print out the separator "; " 
-        //if ( itsBldPv != vsBldPv.begin() )
-        //{
-        //    *pcMsgBuffer++ = ';'; *pcMsgBuffer++ = ' ';            
-        //    uDataSize += 2;
-        //}
-        
         const string& sBldPv = *itsBldPv;
         if ( _iDebugLevel >= 3 )
             printf( "Reading PV %s...\n", sBldPv.c_str());
@@ -612,19 +608,6 @@ try
         int iFail = pBldPacketHeader->setPvValue( iPvIndex, llBufPvVal );
         if ( iFail != 0 )
             throw string("pBldPacketHeader->setPvValue() for PV ") + sBldPv + ") Failed\n";
-        
-        //int iNewMsgSize = 0;
-        //if (
-        //  sprintPv( sBldPv.c_str(), llBufPvVal, iMaxMsgSize - uDataSize, pcMsgBuffer, 
-        //  &iNewMsgSize, iFieldType, lNumElements )
-        //  != 0 )
-        //    throw string("sprintPv(") + sBldPv + ") Failed\n";
-        //        
-        //pcMsgBuffer += iNewMsgSize;
-        //uDataSize += iNewMsgSize;
-        
-        //if ( _iDebugLevel >= 3 )
-        //    printf( "Msg Buffer after PV %s AvaSize %d: %s\n", sBldPv.c_str(), iMaxMsgSize - uDataSize, lcMsgBuffer);        
     }
     
     //if ( uDataSize > _uMaxDataSize )
@@ -634,6 +617,14 @@ try
     int iFailSend = _apBldNetworkClient->sendRawData( pBldPacketHeader->getPacketSize(), lcMsgBuffer);
     if ( iFailSend != 0 )
         throw string( "_apBldNetworkClient->sendRawData() Failed\n", _sBldPvList.c_str() );
+
+    if ( _iDebugLevel >= 2 )
+	{
+        printf( "Sent Bld to Addr %x Port %d Interface %s Fiducial 0x%05X\n",
+          _uBldServerAddr, _uBldServerPort, _sBldInterfaceIp.c_str(), uFiducialId ); 
+		if ( _iDebugLevel >= 3 )
+			printf( "PvList %s\n", _sBldPvList.c_str() );
+	}
 }
 catch (string& sError)
 {
