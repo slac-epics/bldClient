@@ -17,6 +17,11 @@ DB += bldFanout.db
 # If <anyname>.db template is not named <anyname>*.template add
 # <anyname>_TEMPLATE = <templatename>
 
+#
+# Create and/or install archive files
+ARCHIVE += bldSettings.tpl-arch
+
+
 include $(TOP)/configure/RULES
 #----------------------------------------
 #  ADD RULES AFTER THIS LINE
