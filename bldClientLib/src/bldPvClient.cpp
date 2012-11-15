@@ -685,14 +685,15 @@ void BldPvClientBasic::bldShowConfig()
     unsigned char* pcAddr = (unsigned char*) &uServerNetworkAddr;
     printf( "  Configurable parameters:\n"
       "    Server Addr %u.%u.%u.%u  Port %d  MaxDataSize %u MCastIF %s\n"
-      "    Source Id %d  Data Type %d\n"
+      "    Source Id %d Data Version %d Data Type %d (0x%X)\n"
       "    PvPreTrigger <%s>\n"
 	  "    PvPostTrigger <%s>\n"
 	  "    PvFiducial <%s>\n"
       "    PvList <%s>\n",
       pcAddr[0], pcAddr[1], pcAddr[2], pcAddr[3],
       _uBldServerPort, _uMaxDataSize, _sBldInterfaceIp.c_str(), 
-      _uSrcPhysicalId, _uxtcDataType,
+	  _uSrcPhysicalId,
+      (_uxtcDataType>>16), (_uxtcDataType&0xFFFF), _uxtcDataType,
 	  _sBldPvPreTrigger.c_str(), _sBldPvPostTrigger.c_str(),
 	  _sBldPvFiducial.c_str(),   _sBldPvList.c_str() );
 

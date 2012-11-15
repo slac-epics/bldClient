@@ -56,12 +56,13 @@ BldPacketHeader::BldPacketHeader(
     }
     
     uExtentSize = setu32LE(uExtentSize1);
-    
-    if ( (int) uDataType1 != ltXtcDataTypeByBldType[uPhysicalId1] )
+ 
+ 	int xtcDataType = uDataType1 & 0xFFFF;
+    if ( xtcDataType != ltXtcDataTypeByBldType[uPhysicalId1] )
     {
         printf( "BldPacketHeader::BldPacketHeader() Input argument uDataType value (%lu) is "
           "not compatible with physical id %lu. Expected uDataType value = %d.\n",
-            (unsigned long) uDataType1, (unsigned long) uPhysicalId1, ltXtcDataTypeByBldType[uPhysicalId1] );
+            (unsigned long) xtcDataType, (unsigned long) uPhysicalId1, ltXtcDataTypeByBldType[uPhysicalId1] );
             
         uDamage = setu32LE(uDamgeTrue);
         uExtentSize = 0;
@@ -73,7 +74,7 @@ BldPacketHeader::BldPacketHeader(
     uPhysicalId2 = uPhysicalId;
     uDataType2 = uDataType;
     uExtentSize2 = uExtentSize;        
-}        
+}
     
 int BldPacketHeader::setPvValue( int iPvIndex, void* pPvValue )
 {
@@ -120,7 +121,8 @@ int setPvValueGMD( int iPvIndex, void* pPvValue, void *payload )
 #endif
 	{
 		double	*	pSrcPvValue = (double*) pPvValue;
-		double	*	pDstPvValue = ((double*) (pDstPvString+32)) + (iPvIndex-1);
+//		double	*	pDstPvValue = ((double*) (pDstPvString+32)) + (iPvIndex-1);
+		double	*	pDstPvValue = (double*) pDstPvString + iPvIndex;
 
 		*pDstPvValue = BldPacketHeader::setdoubleLE(*pSrcPvValue);
 	}
