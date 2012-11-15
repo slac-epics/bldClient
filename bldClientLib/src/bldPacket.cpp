@@ -110,12 +110,14 @@ int setPvValueFEEGasDetEnergy( int iPvIndex, void* pPvValue, void *payload )
 int setPvValueGMD( int iPvIndex, void* pPvValue, void *payload )
 {
 	char		*	pDstPvString = (char *) payload;
+#if 0
 	if ( iPvIndex == 0 )
 	{
 		const char	*	pSrcPvValue = (char *) pPvValue;
 		strncpy( pDstPvString, pSrcPvValue, 32 );
 	}
 	else
+#endif
 	{
 		double	*	pSrcPvValue = (double*) pPvValue;
 		double	*	pDstPvValue = ((double*) (pDstPvString+32)) + (iPvIndex-1);
@@ -125,33 +127,26 @@ int setPvValueGMD( int iPvIndex, void* pPvValue, void *payload )
     return 0;
 }
 
-// GMD Packet: 32 byte string, 15 doubles
-//	cPclass BldDataGMDV0
+// GMD Packet: Version 0: 32 byte string, 15 doubles, OBSOLETE
+// GMD Packet: Version 1: 6 doubles
+//	From 
+//	cPclass BldDataGMDV1
 //	{
 //		public:
-//		enum	{	version	=	0	};
+//		enum	{	version	=	1	};
 //	
-//		char	strGasType[32];			// Gas Type
-//		double	fPressure;				// Pressure from Spinning Rotor Gauge
-//		double	fTemperature;			// Temp from PT100
-//		double	fCurrent;				// Current from Keithley Electrometer
-//		double	fHvMeshElectron;		// HV Mesh Electron
-//		double	fHvMeshIon;				// HV Mesh Ion
-//		double	fHvMultIon;				// HV Mult Ion
-//		double	fChargeQ;				// Charge Q
-//		double	fPhotonEnergy;			// Photon Energy
-//		double	fMultPulseIntensity;	// Pulse Intensity derived from Electron Multiplier
-//		double	fKeithleyPulseIntensity;// Pulse Intensity derived from ION cup current
-//		double	fPulseEnergy;			// Pulse Energy derived from Electron Multiplier
-//		double	fPulseEnergyFEE;		// Pulse Energy from FEE Gas Detector
-//		double	fTransmission;			// Transmission derived from Electron Multiplier
-//		double	fTransmissionFEE;		// Transmission from FEE Gas Detector
-//		double	fSpare6;				// Spare 6
+//		double	milliJoulesPerPulse;	// Shot to shot pulse energy (mJ)
+//		double	milliJoulesAverage;		// Average pulse energy from ION cup current (mJ)
+//		double	correctedSumPerPulse;	// Bg corrected waveform integrated within limits in raw A/D counts
+//		double	bgValuePerSample;		// Avg background value per sample in raw A/D counts
+//		double	relativeEnergyPerPulse;	// Shot by shot pulse energy in arbitrary units
+//		double	spare1;					// Spare value for use as needed
 //	
 //		int print() const;
 //	};
 //
-const size_t	sizeGMD = 32 + sizeof(double)*15;
+//const size_t	sizeGMD = 32 + sizeof(double)*15;
+const size_t	sizeGMD = sizeof(double)*6;
 void BldPacketHeader::Initialize(void)
 {
     if (!init_done) {

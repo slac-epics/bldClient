@@ -20,6 +20,7 @@ record( calc, "$(BLD):bldCount" )
     field( DESC, "Bld Packet Counter" )
     field( INPA, "$(BLD):bldCount" )
 	field( CALC, "A+1" )
+	field( EGU,  "Pkts" )
 }
 
 record( calc, "$(BLD):bldRate" )
@@ -31,6 +32,7 @@ record( calc, "$(BLD):bldRate" )
 	field( CALC, "A-B" )
 	field( LOW,  "0" )
 	field( LSV,  "MINOR" )
+	field( EGU,  "Pkts/Sec" )
 }
 
 record(sub,"$(BLD):bldControl")

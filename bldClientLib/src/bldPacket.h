@@ -39,6 +39,7 @@ public:
      */
      
     // Imported from PDS repository: pdsdata/xtc/BldInfo.hh : BldInfo::Type
+	// /reg/g/pcds/dist/pds/sxr/princeton_tomy/pdsdata/xtc/BldInfo.hh
     // Note that this is only the ones *we* handle!  Max is set large for the future!
     enum BldTypeId	{	EBeam, PhaseCavity, FEEGasDetEnergy,
 						Nh2Sb1Ipm01,  
