@@ -1,16 +1,16 @@
 record(sub,"$(BLD):bldPreTrigger")
 {
     field(DESC, "Bld Pre-computation Trigger")
-    field(INAM,"bldPreSubInit")
-    field(SNAM,"bldPreSubProcess")
+    field(INAM, "bldPreSubInit")
+    field(SNAM, "bldPreSubProcess")
     field(INPA, "$(BLDNO)")
 }
 
 record(sub,"$(BLD):bldPostTrigger")
 {
     field(DESC, "Bld Post-computation Trigger")
-    field(INAM,"bldPostSubInit")
-    field(SNAM,"bldPostSubProcess")
+    field(INAM, "bldPostSubInit")
+    field(SNAM, "bldPostSubProcess")
     field(INPA, "$(BLDNO)")
     field(FLNK, "$(BLD):bldCount" )
 }

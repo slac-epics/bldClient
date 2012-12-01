@@ -571,9 +571,9 @@ try
 	{
 		static unsigned long	msgCount	= 0;
 
-		if ( (msgCount++ % 10000) || ( _iDebugLevel >= 2 ) )
+		if ( !(msgCount++ % 10000) || ( _iDebugLevel >= 2 ) )
 		{
-    		if ( _uFiducialIdCur == FIDUCIAL_NOT_SET )
+    		if ( uFiducialId == FIDUCIAL_NOT_SET )
 				throw string( "Fiducial not set.  Did your bldPreTrigger PV process?\n" );
 			else
 				throw string( "Invalid Fiducial 0x1FFFF\n" );
