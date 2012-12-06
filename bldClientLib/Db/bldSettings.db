@@ -21,6 +21,7 @@ record( calc, "$(BLD):bldCount" )
     field( INPA, "$(BLD):bldCount" )
 	field( CALC, "A+1" )
 	field( EGU,  "Pkts" )
+	field( PREC, "0" )
 }
 
 record( calc, "$(BLD):bldRate" )
@@ -33,6 +34,7 @@ record( calc, "$(BLD):bldRate" )
 	field( LOW,  "0" )
 	field( LSV,  "MINOR" )
 	field( EGU,  "Pkts/Sec" )
+	field( PREC, "1" )
 }
 
 record(sub,"$(BLD):bldControl")
