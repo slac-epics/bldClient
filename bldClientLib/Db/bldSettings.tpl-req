@@ -1,0 +1,11 @@
+# Autosave list for BLD
+$(BLD):bldRate.EGU
+$(BLD):bldRate.HHSV
+$(BLD):bldRate.HIGH
+$(BLD):bldRate.HIHI
+$(BLD):bldRate.HSV
+$(BLD):bldRate.LLSV
+$(BLD):bldRate.LOLO
+$(BLD):bldRate.LOW
+$(BLD):bldRate.LSV
+$(BLD):bldRate.PREC

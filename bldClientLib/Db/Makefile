@@ -21,6 +21,8 @@ DB += bldFanout.db
 # Create and/or install archive files
 ARCHIVE += bldSettings.tpl-arch
 
+# Create and/or install autosave files
+REQ += bldSettings.tpl-req
 
 include $(TOP)/configure/RULES
 #----------------------------------------

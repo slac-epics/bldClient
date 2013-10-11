@@ -259,120 +259,120 @@ int BldPvClientBasic::bldStart()
 
     printf( "Starting bld:\n" );
         
-try
-{
-    const unsigned char ucTTL = 32; /// minimum: 1 + (# of routers in the middle)
-            
-    _apBldNetworkClient.reset(
-      EpicsBld::BldNetworkClientFactory::createBldNetworkClient(_uBldServerAddr, _uBldServerPort, 
-      _uMaxDataSize, ucTTL, _sBldInterfaceIp.c_str() )
-      );
-    if ( _apBldNetworkClient.get() == NULL )
-        throw string("BldNetworkClient Init fail\n");
+	try
+	{
+		const unsigned char ucTTL = 32; /// minimum: 1 + (# of routers in the middle)
+				
+		_apBldNetworkClient.reset(
+		  EpicsBld::BldNetworkClientFactory::createBldNetworkClient(_uBldServerAddr, _uBldServerPort, 
+		  _uMaxDataSize, ucTTL, _sBldInterfaceIp.c_str() )
+		  );
+		if ( _apBldNetworkClient.get() == NULL )
+			throw string("BldNetworkClient Init fail\n");
 
-    _apBldNetworkClient->setDebugLevel( _iDebugLevel );
-    
-    /*
-     * setup forward link:  _sBldPvPreTrigger -> _sBldPvPreSubRec -> _sBldPvPreTriggerPrevFLNK
-     */
-    if ( !_sBldPvPreTrigger.empty() )
-    {
-        short int iFieldType = 0;
-        long lNumElements = 0;
-        char* lcBufPvVal = (char*) llBufPvVal;
-        llBufPvVal[0] = 0;
+		_apBldNetworkClient->setDebugLevel( _iDebugLevel );
+		
+		/*
+		 * setup forward link:  _sBldPvPreTrigger -> _sBldPvPreSubRec -> _sBldPvPreTriggerPrevFLNK
+		 */
+		if ( !_sBldPvPreTrigger.empty() )
+		{
+			short int iFieldType = 0;
+			long lNumElements = 0;
+			char* lcBufPvVal = (char*) llBufPvVal;
+			llBufPvVal[0] = 0;
 
-        // Read PV: (_sBldPvPreTrigger).FLNK
-        // If it has ".XXX" at the end, no need to append ".FLNK"!
-        string sBldPvPreTriggerFieldFLNK = 
-            (_sBldPvPreTrigger.find('.') == string::npos) ? _sBldPvPreTrigger + ".FLNK"
-                                                          : _sBldPvPreTrigger;
-        if ( 
-          readPv( sBldPvPreTriggerFieldFLNK.c_str(), sizeof(llBufPvVal), llBufPvVal, &iFieldType, &lNumElements )
-          != 0 )
-            throw string("readPv(") + sBldPvPreTriggerFieldFLNK + ") Failed\n";
-        _sBldPvPreTriggerPrevFLNK.assign(lcBufPvVal);
-        
-        // Set PV: (_sBldPvPreSubRec).FLNK = (_sBldPvPreTrigger).FLNK
-        if ( _sBldPvPreTriggerPrevFLNK == "0" ) // special case: "0" means NO FLNK
-            _sBldPvPreTriggerPrevFLNK.clear();
-        else if ( !_sBldPvPreTriggerPrevFLNK.empty() )
-        {
-            string sBldPvSubRecFieldFLNK = _sBldPvPreSubRec + ".FLNK";
-            if ( _iDebugLevel >= 1 )
-                printf( "Setting PV FLNK: %s = %s\n", sBldPvSubRecFieldFLNK.c_str(), 
-                  _sBldPvPreTriggerPrevFLNK.c_str() );
-            if ( 
-              writePv( sBldPvSubRecFieldFLNK.c_str(), lcBufPvVal )
-              != 0 )
-                throw string("writePv(") + sBldPvSubRecFieldFLNK + ") Failed\n";    
-        }
+			// Read PV: (_sBldPvPreTrigger).FLNK
+			// If it has ".XXX" at the end, no need to append ".FLNK"!
+			string sBldPvPreTriggerFieldFLNK = 
+				(_sBldPvPreTrigger.find('.') == string::npos) ? _sBldPvPreTrigger + ".FLNK"
+															  : _sBldPvPreTrigger;
+			if ( 
+			  readPv( sBldPvPreTriggerFieldFLNK.c_str(), sizeof(llBufPvVal), llBufPvVal, &iFieldType, &lNumElements )
+			  != 0 )
+				throw string("readPv(") + sBldPvPreTriggerFieldFLNK + ") Failed\n";
+			_sBldPvPreTriggerPrevFLNK.assign(lcBufPvVal);
+			
+			// Set PV: (_sBldPvPreSubRec).FLNK = (_sBldPvPreTrigger).FLNK
+			if ( _sBldPvPreTriggerPrevFLNK == "0" ) // special case: "0" means NO FLNK
+				_sBldPvPreTriggerPrevFLNK.clear();
+			else if ( !_sBldPvPreTriggerPrevFLNK.empty() )
+			{
+				string sBldPvSubRecFieldFLNK = _sBldPvPreSubRec + ".FLNK";
+				if ( _iDebugLevel >= 1 )
+					printf( "Setting PV FLNK: %s = %s\n", sBldPvSubRecFieldFLNK.c_str(), 
+					  _sBldPvPreTriggerPrevFLNK.c_str() );
+				if ( 
+				  writePv( sBldPvSubRecFieldFLNK.c_str(), lcBufPvVal )
+				  != 0 )
+					throw string("writePv(") + sBldPvSubRecFieldFLNK + ") Failed\n";    
+			}
 
-        // Set PV: (_sBldPvPreTrigger).FLNK = _sBldPvPreSubRec
-        int iLenPvVal = _sBldPvPreSubRec.length();
-        strncpy( lcBufPvVal, _sBldPvPreSubRec.c_str(), iLenPvVal );
-        if ( _iDebugLevel >= 1 )
-            printf( "Setting PV FLNK: %s = %s\n", sBldPvPreTriggerFieldFLNK.c_str(), 
-              _sBldPvPreSubRec.c_str() );
-        if ( 
-          writePv( sBldPvPreTriggerFieldFLNK.c_str(), lcBufPvVal )
-          != 0 )
-            throw string("writePv(") + sBldPvPreTriggerFieldFLNK + ") Failed\n";            
-    }
-        
-    
-    /*
-    * setup forward link:  _sBldPvPostTrigger -> _sBldPvPostSubRec -> _sBldPvPostTriggerPostvFLNK
-    */
-    if ( !_sBldPvPostTrigger.empty() )
-    {
-        short int iFieldType = 0;
-        long lNumElements = 0;
-        char* lcBufPvVal = (char*) llBufPvVal;
-        llBufPvVal[0] = 0;
+			// Set PV: (_sBldPvPreTrigger).FLNK = _sBldPvPreSubRec
+			int iLenPvVal = _sBldPvPreSubRec.length();
+			strncpy( lcBufPvVal, _sBldPvPreSubRec.c_str(), iLenPvVal );
+			if ( _iDebugLevel >= 1 )
+				printf( "Setting PV FLNK: %s = %s\n", sBldPvPreTriggerFieldFLNK.c_str(), 
+				  _sBldPvPreSubRec.c_str() );
+			if ( 
+			  writePv( sBldPvPreTriggerFieldFLNK.c_str(), lcBufPvVal )
+			  != 0 )
+				throw string("writePv(") + sBldPvPreTriggerFieldFLNK + ") Failed\n";            
+		}
+			
+		
+		/*
+		* setup forward link:  _sBldPvPostTrigger -> _sBldPvPostSubRec -> _sBldPvPostTriggerPostvFLNK
+		*/
+		if ( !_sBldPvPostTrigger.empty() )
+		{
+			short int iFieldType = 0;
+			long lNumElements = 0;
+			char* lcBufPvVal = (char*) llBufPvVal;
+			llBufPvVal[0] = 0;
 
-        // Read PV: (_sBldPvPostTrigger).FLNK
-        string sBldPvPostTriggerFieldFLNK = _sBldPvPostTrigger + ".FLNK";
-        if ( 
-             readPv( sBldPvPostTriggerFieldFLNK.c_str(), sizeof(llBufPvVal), llBufPvVal, &iFieldType, &lNumElements )
-             != 0 )
-            throw string("readPv(") + sBldPvPostTriggerFieldFLNK + ") Failed\n";
-        _sBldPvPostTriggerPrevFLNK.assign(lcBufPvVal);
-        
-        // Set PV: (_sBldPvPostSubRec).FLNK = (_sBldPvPostTrigger).FLNK
-        if ( _sBldPvPostTriggerPrevFLNK == "0" ) // special case: "0" means NO FLNK
-            _sBldPvPostTriggerPrevFLNK.clear();
-        else if ( !_sBldPvPostTriggerPrevFLNK.empty() )
-        {
-            string sBldPvSubRecFieldFLNK = _sBldPvPostSubRec + ".FLNK";
-            if ( _iDebugLevel >= 1 )
-                printf( "Setting PV FLNK: %s = %s\n", sBldPvSubRecFieldFLNK.c_str(), 
-                        _sBldPvPostTriggerPrevFLNK.c_str() );
-            if ( 
-                 writePv( sBldPvSubRecFieldFLNK.c_str(), lcBufPvVal )
-                 != 0 )
-                throw string("writePv(") + sBldPvSubRecFieldFLNK + ") Failed\n";    
-        }
+			// Read PV: (_sBldPvPostTrigger).FLNK
+			string sBldPvPostTriggerFieldFLNK = _sBldPvPostTrigger + ".FLNK";
+			if ( 
+				 readPv( sBldPvPostTriggerFieldFLNK.c_str(), sizeof(llBufPvVal), llBufPvVal, &iFieldType, &lNumElements )
+				 != 0 )
+				throw string("readPv(") + sBldPvPostTriggerFieldFLNK + ") Failed\n";
+			_sBldPvPostTriggerPrevFLNK.assign(lcBufPvVal);
+			
+			// Set PV: (_sBldPvPostSubRec).FLNK = (_sBldPvPostTrigger).FLNK
+			if ( _sBldPvPostTriggerPrevFLNK == "0" ) // special case: "0" means NO FLNK
+				_sBldPvPostTriggerPrevFLNK.clear();
+			else if ( !_sBldPvPostTriggerPrevFLNK.empty() )
+			{
+				string sBldPvSubRecFieldFLNK = _sBldPvPostSubRec + ".FLNK";
+				if ( _iDebugLevel >= 1 )
+					printf( "Setting PV FLNK: %s = %s\n", sBldPvSubRecFieldFLNK.c_str(), 
+							_sBldPvPostTriggerPrevFLNK.c_str() );
+				if ( 
+					 writePv( sBldPvSubRecFieldFLNK.c_str(), lcBufPvVal )
+					 != 0 )
+					throw string("writePv(") + sBldPvSubRecFieldFLNK + ") Failed\n";    
+			}
 
-        // Set PV: (_sBldPvPostTrigger).FLNK = _sBldPvPostSubRec
-        int iLenPvVal = _sBldPvPostSubRec.length();
-        strncpy( lcBufPvVal, _sBldPvPostSubRec.c_str(), iLenPvVal );
-        if ( _iDebugLevel >= 1 )
-            printf( "Setting PV FLNK: %s = %s\n", sBldPvPostTriggerFieldFLNK.c_str(), 
-                    _sBldPvPostSubRec.c_str() );
-        if ( 
-             writePv( sBldPvPostTriggerFieldFLNK.c_str(), lcBufPvVal )
-             != 0 )
-            throw string("writePv(") + sBldPvPostTriggerFieldFLNK + ") Failed\n";            
-    }    
-    
-}   
-catch (string& sError)
-{
-    printf( "[FAILED]\n" );    
-    printf( "BldPvClientBasic::bldStart() : %s\n", sError.c_str() );     
-    return 2;
-}
+			// Set PV: (_sBldPvPostTrigger).FLNK = _sBldPvPostSubRec
+			int iLenPvVal = _sBldPvPostSubRec.length();
+			strncpy( lcBufPvVal, _sBldPvPostSubRec.c_str(), iLenPvVal );
+			if ( _iDebugLevel >= 1 )
+				printf( "Setting PV FLNK: %s = %s\n", sBldPvPostTriggerFieldFLNK.c_str(), 
+						_sBldPvPostSubRec.c_str() );
+			if ( 
+				 writePv( sBldPvPostTriggerFieldFLNK.c_str(), lcBufPvVal )
+				 != 0 )
+				throw string("writePv(") + sBldPvPostTriggerFieldFLNK + ") Failed\n";            
+		}    
+		
+	}   
+	catch (string& sError)
+	{
+		printf( "[FAILED]\n" );    
+		printf( "BldPvClientBasic::bldStart() : %s\n", sError.c_str() );     
+		return 2;
+	}
 
     printf( "[OK]\n" );    
     _bBldStarted = true;
@@ -387,89 +387,89 @@ int BldPvClientBasic::bldStop()
         
     printf( "Shutting down bld:\n" );
     
-try
-{        
-    /*
-     * reset forward link:  _sBldPvPreTrigger -> _sBldPvPreTriggerPrevFLNK , _sBldPvPreSubRec ->  ""
-     */
-    if ( !_sBldPvPreTrigger.empty() )
-    {
-        char* lcBufPvVal = (char*) llBufPvVal;
-        llBufPvVal[0] = 0;
-        
-        // Set PV: (_sBldPvPreTrigger).FLNK = ""
-        int iLenPvVal = _sBldPvPreTriggerPrevFLNK.length();
-        strncpy( lcBufPvVal, _sBldPvPreTriggerPrevFLNK.c_str(), iLenPvVal );
-        // If it has ".XXX" at the end, no need to append ".FLNK"!
-        string sBldPvPreTriggerFieldFLNK = 
-            (_sBldPvPreTrigger.find('.') == string::npos) ? _sBldPvPreTrigger + ".FLNK"
-                                                          : _sBldPvPreTrigger;
-        if ( _iDebugLevel >= 1 )
-            printf( "Setting PV FLNK: %s = %s\n", sBldPvPreTriggerFieldFLNK.c_str(), 
-              _sBldPvPreTriggerPrevFLNK.c_str() );
-        if ( 
-          writePv( sBldPvPreTriggerFieldFLNK.c_str(), lcBufPvVal )
-          != 0 )
-            throw string("writePv(") + sBldPvPreTriggerFieldFLNK + ") Failed\n";
-            
-        if ( !_sBldPvPreTriggerPrevFLNK.empty() )
-        {
-            lcBufPvVal[0] = 0; // set lcBufPvVal = ""
-            string sBldPvSubRecFieldFLNK = _sBldPvPreSubRec + ".FLNK";
-            if ( _iDebugLevel >= 1 )
-                printf( "Setting PV FLNK: %s = 0\n", sBldPvSubRecFieldFLNK.c_str() );            
-            if ( 
-              writePv( sBldPvSubRecFieldFLNK.c_str(), lcBufPvVal )
-              != 0 )
-                throw string("writePv(") + sBldPvSubRecFieldFLNK + ") Failed\n";                        
-        }
-    }    
+	try
+	{        
+		/*
+		 * reset forward link:  _sBldPvPreTrigger -> _sBldPvPreTriggerPrevFLNK , _sBldPvPreSubRec ->  ""
+		 */
+		if ( !_sBldPvPreTrigger.empty() )
+		{
+			char* lcBufPvVal = (char*) llBufPvVal;
+			llBufPvVal[0] = 0;
+			
+			// Set PV: (_sBldPvPreTrigger).FLNK = ""
+			int iLenPvVal = _sBldPvPreTriggerPrevFLNK.length();
+			strncpy( lcBufPvVal, _sBldPvPreTriggerPrevFLNK.c_str(), iLenPvVal );
+			// If it has ".XXX" at the end, no need to append ".FLNK"!
+			string sBldPvPreTriggerFieldFLNK = 
+				(_sBldPvPreTrigger.find('.') == string::npos) ? _sBldPvPreTrigger + ".FLNK"
+															  : _sBldPvPreTrigger;
+			if ( _iDebugLevel >= 1 )
+				printf( "Setting PV FLNK: %s = %s\n", sBldPvPreTriggerFieldFLNK.c_str(), 
+				  _sBldPvPreTriggerPrevFLNK.c_str() );
+			if ( 
+			  writePv( sBldPvPreTriggerFieldFLNK.c_str(), lcBufPvVal )
+			  != 0 )
+				throw string("writePv(") + sBldPvPreTriggerFieldFLNK + ") Failed\n";
+				
+			if ( !_sBldPvPreTriggerPrevFLNK.empty() )
+			{
+				lcBufPvVal[0] = 0; // set lcBufPvVal = ""
+				string sBldPvSubRecFieldFLNK = _sBldPvPreSubRec + ".FLNK";
+				if ( _iDebugLevel >= 1 )
+					printf( "Setting PV FLNK: %s = 0\n", sBldPvSubRecFieldFLNK.c_str() );            
+				if ( 
+				  writePv( sBldPvSubRecFieldFLNK.c_str(), lcBufPvVal )
+				  != 0 )
+					throw string("writePv(") + sBldPvSubRecFieldFLNK + ") Failed\n";                        
+			}
+		}    
 
-    _sBldPvPreTriggerPrevFLNK.clear();
-    
-    /*
-    * reset forward link:  _sBldPvPostTrigger -> _sBldPvPostTriggerPrevFLNK , _sBldPvPostSubRec ->  ""
-    */
-    if ( !_sBldPvPostTrigger.empty() )
-    {
-        char* lcBufPvVal = (char*) llBufPvVal;
-        llBufPvVal[0] = 0;
-        
-        // Set PV: (_sBldPvPostTrigger).FLNK = ""
-        int iLenPvVal = _sBldPvPostTriggerPrevFLNK.length();
-        strncpy( lcBufPvVal, _sBldPvPostTriggerPrevFLNK.c_str(), iLenPvVal );
-        string sBldPvPostTriggerFieldFLNK = _sBldPvPostTrigger + ".FLNK";
-        if ( _iDebugLevel >= 1 )
-            printf( "Setting PV FLNK: %s = %s\n", sBldPvPostTriggerFieldFLNK.c_str(), 
-                    _sBldPvPostTriggerPrevFLNK.c_str() );
-        if ( 
-             writePv( sBldPvPostTriggerFieldFLNK.c_str(), lcBufPvVal )
-             != 0 )
-            throw string("writePv(") + sBldPvPostTriggerFieldFLNK + ") Failed\n";
-            
-        if ( !_sBldPvPostTriggerPrevFLNK.empty() )
-        {
-            lcBufPvVal[0] = 0; // set lcBufPvVal = ""
-            string sBldPvSubRecFieldFLNK = _sBldPvPostSubRec + ".FLNK";
-            if ( _iDebugLevel >= 1 )
-                printf( "Setting PV FLNK: %s = 0\n", sBldPvSubRecFieldFLNK.c_str() );            
-            if ( 
-                 writePv( sBldPvSubRecFieldFLNK.c_str(), lcBufPvVal )
-                 != 0 )
-                throw string("writePv(") + sBldPvSubRecFieldFLNK + ") Failed\n";                        
-        }
-    }    
+		_sBldPvPreTriggerPrevFLNK.clear();
+		
+		/*
+		* reset forward link:  _sBldPvPostTrigger -> _sBldPvPostTriggerPrevFLNK , _sBldPvPostSubRec ->  ""
+		*/
+		if ( !_sBldPvPostTrigger.empty() )
+		{
+			char* lcBufPvVal = (char*) llBufPvVal;
+			llBufPvVal[0] = 0;
+			
+			// Set PV: (_sBldPvPostTrigger).FLNK = ""
+			int iLenPvVal = _sBldPvPostTriggerPrevFLNK.length();
+			strncpy( lcBufPvVal, _sBldPvPostTriggerPrevFLNK.c_str(), iLenPvVal );
+			string sBldPvPostTriggerFieldFLNK = _sBldPvPostTrigger + ".FLNK";
+			if ( _iDebugLevel >= 1 )
+				printf( "Setting PV FLNK: %s = %s\n", sBldPvPostTriggerFieldFLNK.c_str(), 
+						_sBldPvPostTriggerPrevFLNK.c_str() );
+			if ( 
+				 writePv( sBldPvPostTriggerFieldFLNK.c_str(), lcBufPvVal )
+				 != 0 )
+				throw string("writePv(") + sBldPvPostTriggerFieldFLNK + ") Failed\n";
+				
+			if ( !_sBldPvPostTriggerPrevFLNK.empty() )
+			{
+				lcBufPvVal[0] = 0; // set lcBufPvVal = ""
+				string sBldPvSubRecFieldFLNK = _sBldPvPostSubRec + ".FLNK";
+				if ( _iDebugLevel >= 1 )
+					printf( "Setting PV FLNK: %s = 0\n", sBldPvSubRecFieldFLNK.c_str() );            
+				if ( 
+					 writePv( sBldPvSubRecFieldFLNK.c_str(), lcBufPvVal )
+					 != 0 )
+					throw string("writePv(") + sBldPvSubRecFieldFLNK + ") Failed\n";                        
+			}
+		}    
 
-    _sBldPvPostTriggerPrevFLNK.clear();
-    
-    _apBldNetworkClient.release();
-}   
-catch (string& sError)
-{
-    printf( "[FAILED]\n" );    
-    printf( "BldPvClientBasic::bldStop() : %s\n", sError.c_str() );     
-    return 2;
-}
+		_sBldPvPostTriggerPrevFLNK.clear();
+		
+		_apBldNetworkClient.release();
+	}   
+	catch (string& sError)
+	{
+		printf( "[FAILED]\n" );    
+		printf( "BldPvClientBasic::bldStop() : %s\n", sError.c_str() );     
+		return 2;
+	}
 
     printf( "[OK]\n" );    
     _bBldStarted = false;
@@ -503,32 +503,32 @@ int BldPvClientBasic::bldPrepareData()
 
     int iRetErrorCode = 0;
     
-try
-{       
-    short int iFieldType = 0;
-    long lNumElements = 0;
-    
-    unsigned int uFiducialId = 0x1FFFF;
-    if ( _sBldPvFiducial.length() > 0 )
-    {
-        if ( 
-            readPv( _sBldPvFiducial.c_str(), sizeof(llBufPvVal), llBufPvVal, &iFieldType, &lNumElements )
-            != 0 )
-            throw string("readPv(") + _sBldPvFiducial + ") Failed to read Fiducial PV!\n";
-                    
-        uFiducialId  = *(unsigned long int*) llBufPvVal;
-    }
- 
-    _uFiducialIdCur = uFiducialId;
-    if ( _uFiducialIdCur >= FIDUCIAL_INVALID )
-        throw string( "Invalid fiducial read from " + _sBldPvFiducial + "\n" );
-}
-catch (string& sError)
-{
-    printf( "BldPvClientBasic::bldPrepareData() : %s\n", sError.c_str() );
-      
-    iRetErrorCode = 2;
-}
+	try
+	{       
+		short int iFieldType = 0;
+		long lNumElements = 0;
+		
+		unsigned int uFiducialId = 0x1FFFF;
+		if ( _sBldPvFiducial.length() > 0 )
+		{
+			if ( 
+				readPv( _sBldPvFiducial.c_str(), sizeof(llBufPvVal), llBufPvVal, &iFieldType, &lNumElements )
+				!= 0 )
+				throw string("readPv(") + _sBldPvFiducial + ") Failed to read Fiducial PV!\n";
+						
+			uFiducialId  = *(unsigned long int*) llBufPvVal;
+		}
+	 
+		_uFiducialIdCur = uFiducialId;
+		if ( _uFiducialIdCur >= FIDUCIAL_INVALID )
+			throw string( "Invalid fiducial read from " + _sBldPvFiducial + "\n" );
+	}
+	catch (string& sError)
+	{
+		printf( "BldPvClientBasic::bldPrepareData() : %s\n", sError.c_str() );
+		  
+		iRetErrorCode = 2;
+	}
         
     if ( _iDebugLevel >= 3 )
         printf( "Preparing Data: Get Fiducial Id 0x%05X\n", _uFiducialIdCur ); 
@@ -544,94 +544,94 @@ int BldPvClientBasic::bldSendData()
 
     int iRetErrorCode = 0;
     
-try
-{
-    if ( _apBldNetworkClient.get() == NULL )
-        throw string( "BldNetworkClient is uninitialized\n" );
-
-    short int iFieldType = 0;
-    long lNumElements = 0;
-
-    std::vector<string> vsBldPv;
-    _splitPvList( _sBldPvList, vsBldPv );
-    
-    BldPacketHeader* pBldPacketHeader = (BldPacketHeader*) lcMsgBuffer;
-
-    /* Set bld packet header */    
-    struct timespec ts;
-    int iStatus = clock_gettime (CLOCK_REALTIME, &ts);
-    if (iStatus)
-        throw string( "clock_gettime() Failed\n" );
-    
-	// Get the current fiducial id and check to
-	// see if it's been set by the bldPreTrigger.
-    unsigned int uFiducialId = _uFiducialIdCur;
-    _uFiducialIdCur = FIDUCIAL_NOT_SET;
-	if ( uFiducialId >= FIDUCIAL_INVALID )
+	try
 	{
-		static unsigned long	msgCount	= 0;
+		if ( _apBldNetworkClient.get() == NULL )
+			throw string( "BldNetworkClient is uninitialized\n" );
 
-		if ( !(msgCount++ % 10000) || ( _iDebugLevel >= 2 ) )
+		short int iFieldType = 0;
+		long lNumElements = 0;
+
+		std::vector<string> vsBldPv;
+		_splitPvList( _sBldPvList, vsBldPv );
+		
+		BldPacketHeader* pBldPacketHeader = (BldPacketHeader*) lcMsgBuffer;
+
+		/* Set bld packet header */    
+		struct timespec ts;
+		int iStatus = clock_gettime (CLOCK_REALTIME, &ts);
+		if (iStatus)
+			throw string( "clock_gettime() Failed\n" );
+		
+		// Get the current fiducial id and check to
+		// see if it's been set by the bldPreTrigger.
+		unsigned int uFiducialId = _uFiducialIdCur;
+		_uFiducialIdCur = FIDUCIAL_NOT_SET;
+		if ( uFiducialId >= FIDUCIAL_INVALID )
 		{
-    		if ( uFiducialId == FIDUCIAL_NOT_SET )
-				throw string( "Fiducial not set.  Did your bldPreTrigger PV process?\n" );
-			else
-				throw string( "Invalid Fiducial 0x1FFFF\n" );
+			static unsigned long	msgCount	= 0;
+
+			if ( !(msgCount++ % 10000) || ( _iDebugLevel >= 2 ) )
+			{
+				if ( uFiducialId == FIDUCIAL_NOT_SET )
+					throw string( "Fiducial not set.  Did your bldPreTrigger PV process?\n" );
+				else
+					throw string( "Invalid Fiducial 0x1FFFF\n" );
+			}
+			return 2;
 		}
-    	return 2;
+	 
+		// Create a BldPacketHeader
+		const unsigned int uDamage = 0;
+		new ( pBldPacketHeader ) BldPacketHeader( sizeof(lcMsgBuffer), 
+		  ts.tv_sec, ts.tv_nsec, uFiducialId, uDamage, _uSrcPhysicalId, _uxtcDataType);
+		//char* pcMsgBuffer = (char*) (pBldPacketHeader + 1);
+		//unsigned int uDataSize = sizeof(BldPacketHeader);
+		//const int iMaxMsgSize = sizeof(lcMsgBuffer);
+
+		/* Set bld pv values */        
+		int iPvIndex = 0;
+		for ( std::vector<string>::const_iterator itsBldPv = vsBldPv.begin();
+		  itsBldPv != vsBldPv.end(); itsBldPv++, iPvIndex++ )
+		{
+			const string& sBldPv = *itsBldPv;
+			if ( _iDebugLevel >= 3 )
+				printf( "Reading PV %s...\n", sBldPv.c_str());
+			if ( 
+			  readPv( sBldPv.c_str(), sizeof(llBufPvVal), llBufPvVal, &iFieldType, &lNumElements )
+			  != 0 )
+				throw string("readPv(") + sBldPv + ") Failed\n";
+			
+			//if ( _iDebugLevel >= 3)
+			//    printf( "Msg Buffer before PV %s Available Size %d: %s\n", sBldPv.c_str(), iMaxMsgSize - uDataSize, lcMsgBuffer);
+			
+			int iFail = pBldPacketHeader->setPvValue( iPvIndex, llBufPvVal );
+			if ( iFail != 0 )
+				throw string("pBldPacketHeader->setPvValue() for PV ") + sBldPv + ") Failed\n";
+		}
+		
+		//if ( uDataSize > _uMaxDataSize )
+		//    throw string("Data Size is larger than max value\n");
+					
+		/* Send out bld */    
+		int iFailSend = _apBldNetworkClient->sendRawData( pBldPacketHeader->getPacketSize(), lcMsgBuffer);
+		if ( iFailSend != 0 )
+			throw string( "_apBldNetworkClient->sendRawData() Failed\n", _sBldPvList.c_str() );
+
+		if ( _iDebugLevel >= 2 )
+		{
+			printf( "Sent Bld to Addr %x Port %d Interface %s Fiducial 0x%05X\n",
+			  _uBldServerAddr, _uBldServerPort, _sBldInterfaceIp.c_str(), uFiducialId ); 
+			if ( _iDebugLevel >= 3 )
+				printf( "PvList %s\n", _sBldPvList.c_str() );
+		}
 	}
- 
- 	// Create a BldPacketHeader
-    const unsigned int uDamage = 0;
-    new ( pBldPacketHeader ) BldPacketHeader( sizeof(lcMsgBuffer), 
-      ts.tv_sec, ts.tv_nsec, uFiducialId, uDamage, _uSrcPhysicalId, _uxtcDataType);
-    //char* pcMsgBuffer = (char*) (pBldPacketHeader + 1);
-    //unsigned int uDataSize = sizeof(BldPacketHeader);
-    //const int iMaxMsgSize = sizeof(lcMsgBuffer);
-
-    /* Set bld pv values */        
-    int iPvIndex = 0;
-    for ( std::vector<string>::const_iterator itsBldPv = vsBldPv.begin();
-      itsBldPv != vsBldPv.end(); itsBldPv++, iPvIndex++ )
-    {
-        const string& sBldPv = *itsBldPv;
-        if ( _iDebugLevel >= 3 )
-            printf( "Reading PV %s...\n", sBldPv.c_str());
-        if ( 
-          readPv( sBldPv.c_str(), sizeof(llBufPvVal), llBufPvVal, &iFieldType, &lNumElements )
-          != 0 )
-            throw string("readPv(") + sBldPv + ") Failed\n";
-        
-        //if ( _iDebugLevel >= 3)
-        //    printf( "Msg Buffer before PV %s Available Size %d: %s\n", sBldPv.c_str(), iMaxMsgSize - uDataSize, lcMsgBuffer);
-        
-        int iFail = pBldPacketHeader->setPvValue( iPvIndex, llBufPvVal );
-        if ( iFail != 0 )
-            throw string("pBldPacketHeader->setPvValue() for PV ") + sBldPv + ") Failed\n";
-    }
-    
-    //if ( uDataSize > _uMaxDataSize )
-    //    throw string("Data Size is larger than max value\n");
-                
-    /* Send out bld */    
-    int iFailSend = _apBldNetworkClient->sendRawData( pBldPacketHeader->getPacketSize(), lcMsgBuffer);
-    if ( iFailSend != 0 )
-        throw string( "_apBldNetworkClient->sendRawData() Failed\n", _sBldPvList.c_str() );
-
-    if ( _iDebugLevel >= 2 )
+	catch (string& sError)
 	{
-        printf( "Sent Bld to Addr %x Port %d Interface %s Fiducial 0x%05X\n",
-          _uBldServerAddr, _uBldServerPort, _sBldInterfaceIp.c_str(), uFiducialId ); 
-		if ( _iDebugLevel >= 3 )
-			printf( "PvList %s\n", _sBldPvList.c_str() );
+		printf( "BldPvClientBasic::bldSendData() : %s\n", sError.c_str() );
+		  
+		iRetErrorCode = 2;
 	}
-}
-catch (string& sError)
-{
-    printf( "BldPvClientBasic::bldSendData() : %s\n", sError.c_str() );
-      
-    iRetErrorCode = 2;
-}
         
     return iRetErrorCode;
 }
