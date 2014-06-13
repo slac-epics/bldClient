@@ -155,7 +155,7 @@ void BldPacketHeader::Initialize(void)
         init_done = 1; /* Do this first, so we don't loop! */
         Register(EBeam,           Any,                0,                &setPvValuePulseEnergy);
         Register(PhaseCavity,     Id_PhaseCavity,     sizeof(double)*4, &setPvValuePhaseCavity);
-        Register(FEEGasDetEnergy, Id_FEEGasDetEnergy, sizeof(double)*4, &setPvValueFEEGasDetEnergy);
+        Register(FEEGasDetEnergy, Id_FEEGasDetEnergy, sizeof(double)*6, &setPvValueFEEGasDetEnergy);
         Register(GMD,			  Id_GMD,			  sizeGMD,			&setPvValueGMD );
     }
 }
