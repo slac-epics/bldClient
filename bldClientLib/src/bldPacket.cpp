@@ -57,7 +57,7 @@ BldPacketHeader::BldPacketHeader(
     
     uExtentSize = setu32LE(uExtentSize1);
  
- 	int xtcDataType = uDataType1 & 0xFFFF;
+    int xtcDataType = uDataType1 & 0xFFFF;
     if ( xtcDataType != ltXtcDataTypeByBldType[uPhysicalId1] )
     {
         printf( "BldPacketHeader::BldPacketHeader() Input argument uDataType value (%lu) is "
