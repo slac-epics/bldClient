@@ -575,7 +575,7 @@ int BldPvClientBasic::bldSendData()
 #endif
 		// Get the current fiducial id and check to
 		// see if it's been set by the bldPreTrigger.
-		int uFiducialId = _uFiducialIdCur;
+		unsigned int uFiducialId = _uFiducialIdCur;
 		_uFiducialIdCur = FIDUCIAL_NOT_SET;
 		if ( uFiducialId >= FIDUCIAL_INVALID )
 		{
@@ -590,8 +590,8 @@ int BldPvClientBasic::bldSendData()
 			}
 			return 2;
 		}
-                if (_uFiducialIdPrev == _uFiducialIdCur) {
-                    /* MCB - Do we want to yell here?  I don't think so. */
+                if (_uFiducialIdPrev == uFiducialId) {
+                    throw string("Duplicate Fiducial in BLD!\n");
                     return 2;
                 }
                 _uFiducialIdPrev = _uFiducialIdCur;
