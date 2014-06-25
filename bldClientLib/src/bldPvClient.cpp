@@ -590,11 +590,14 @@ int BldPvClientBasic::bldSendData()
 			}
 			return 2;
 		}
+                if ( _iDebugLevel < 0 )
+                    printf( "bldSendData: Cur Fiducial Id 0x%05X, Prev Fiducial Id 0x%05X\n", uFiducialId, _uFiducialIdPrev ); 
+
                 if (_uFiducialIdPrev == uFiducialId) {
                     throw string("Duplicate Fiducial in BLD!\n");
                     return 2;
                 }
-                _uFiducialIdPrev = _uFiducialIdCur;
+                _uFiducialIdPrev = uFiducialId;
 	 
 		// Create a BldPacketHeader
 		const unsigned int uDamage = 0;
