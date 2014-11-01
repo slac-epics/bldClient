@@ -15,13 +15,11 @@ include $(TOP)/configure/CONFIG
 #BUILDFOR=_RTEMS
 
 LIBRARY_IOC	+= bldClient
-INC			+= bldNetworkClient.h bldPvClient.h
+INC			+= bldNetworkClient.h
+INC			+= bldPvClient.h
 
-
-#DBD        = foo.dbd
 DBD			+= bldClient.dbd
 
-#bldClient_DBD		+= base.dbd
 bldClient_DBD		+= bldSub.dbd
 bldClient_DBD		+= bldIocShCmds.dbd
 

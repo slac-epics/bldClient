@@ -10,9 +10,9 @@ namespace EpicsBld
  * class BldPacketHeader
  */
 
-int BldPacketHeader::liBldPacketSizeByBldType[BldPacketHeader::NumberOfBldTypeId];
-BldPacketHeader::XtcDataType BldPacketHeader::ltXtcDataTypeByBldType[BldPacketHeader::NumberOfBldTypeId];
-TSetPvFuncPointer BldPacketHeader::lfuncSetvFunctionTable[BldPacketHeader::NumberOfBldTypeId];
+int								BldPacketHeader::liBldPacketSizeByBldType[	BldPacketHeader::NumberOfBldTypeId	];
+BldPacketHeader::XtcDataType	BldPacketHeader::ltXtcDataTypeByBldType[	BldPacketHeader::NumberOfBldTypeId	];
+TSetPvFuncPointer				BldPacketHeader::lfuncSetvFunctionTable[	BldPacketHeader::NumberOfBldTypeId	];
 int BldPacketHeader::init_done = 0;
 
 BldPacketHeader::BldPacketHeader(

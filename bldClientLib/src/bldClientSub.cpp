@@ -42,8 +42,8 @@ static long bldPreSubProcess(subRecord *pSubrecord)
         printf("bldPreSubProcess() : Record %s called bldPreSubProcess(%p)\n",
           pSubrecord->name, (void*) pSubrecord); 
     
-    BldPrepareData(pSubrecord->a);
-        
+    BldPrepareData( static_cast<int>(pSubrecord->a) );
+
     return(0);
 }
 

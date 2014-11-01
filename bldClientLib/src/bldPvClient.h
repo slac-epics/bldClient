@@ -1,6 +1,8 @@
 #ifndef BLD_PV_CLIENT_H
 #define BLD_PV_CLIENT_H
 
+#include <epicsTime.h>
+
 namespace EpicsBld
 {   
 /**
@@ -31,7 +33,14 @@ public:
     // To be called by trigger variables (subroutine records)
     virtual int bldPrepareData() = 0;       
     virtual int bldSendData() = 0; 
-    
+ 
+    virtual int bldSendPacket(
+			unsigned int		srcPhysicalId,
+			unsigned int		xtcDataType,
+			epicsTimeStamp	&	tsFiducial,
+			void			*	pPacket,
+			size_t				sPacket	) = 0; 
+ 
     // debug information control
     virtual void setDebugLevel(int iDebugLevel) = 0;
     virtual int getDebugLevel() = 0;
@@ -97,12 +106,18 @@ int BldSetPreSub(int id, const char* sBldSubRec);
 int BldSetPostSub(int id, const char* sBldSubRec);
 int BldPrepareData(int id); 
 int BldSendData(int id); 
+int BldSendPacket(	unsigned int		srcPhysicalId,
+					unsigned int		xtcDataType,
+					epicsTimeStamp	&	tsFiducial,
+					void			*	pPacket,
+					size_t				sPacket	);
 
 void BldSetDebugLevel(int id, int iDebugLevel); 
 int BldGetDebugLevel(int id); 
 
 #define	FIDUCIAL_NOT_SET	0x20000
-#define FIDUCIAL_INVALID	0x1FFFF
+#define FIDUCIAL_MASK		0x1FFFF
+#define FIDUCIAL_INVALID	FIDUCIAL_MASK
 
 }
 

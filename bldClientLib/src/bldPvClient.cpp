@@ -97,6 +97,15 @@ int BldSendData(int id)
     return EpicsBld::BldPvClientFactory::getSingletonBldPvClient(id).bldSendData();
 }
 
+int BldSendPacket(	unsigned int		id,
+					unsigned int		xtc,
+					epicsTimeStamp	&	ts,
+					void			*	pPkt,
+					size_t				sPkt	)
+{
+    return EpicsBld::BldPvClientFactory::getSingletonBldPvClient(id).bldSendPacket( id, xtc, ts, pPkt, sPkt );
+}
+
 void BldSetDebugLevel(int id, int iDebugLevel)
 {
     EpicsBld::BldPvClientFactory::getSingletonBldPvClient(id).setDebugLevel(iDebugLevel);
@@ -142,6 +151,12 @@ public:
     // To be called by trigger variables (subroutine records)      
     virtual int bldPrepareData(); 
     virtual int bldSendData(); 
+    virtual int bldSendPacket(
+			unsigned int		srcPhysicalId,
+			unsigned int		xtcDataType,
+			epicsTimeStamp	&	tsFiducial,
+			void			*	pPacket,
+			size_t				sPacket	); 
 
     // debug information control
     virtual void setDebugLevel(int iDebugLevel);
@@ -654,6 +669,76 @@ int BldPvClientBasic::bldSendData()
     return iRetErrorCode;
 }
 
+// Use this form when caller has already packed the data into
+// a buffer and has a timestamp w/ a valid fiducial
+int BldPvClientBasic::bldSendPacket(
+	unsigned int			srcPhysicalId,
+	unsigned int			xtcDataType,
+	epicsTimeStamp		&	tsFiducial,
+	void				*	pPacket,
+	size_t					sPacket	)
+{
+    if ( !_bBldStarted )
+        return 1; // return status, without error report
+
+    int iRetErrorCode = 0;
+
+	try
+	{
+		if ( _apBldNetworkClient.get() == NULL )
+			throw string( "BldNetworkClient is uninitialized\n" );
+
+		/* Set bld packet header */
+		struct timespec		ts;
+		unsigned int		uFiducialId;
+		/* New regime - Use the fiducial timestamp! */
+		ts.tv_sec	= tsFiducial.secPastEpoch + POSIX_TIME_AT_EPICS_EPOCH;
+		ts.tv_nsec	= tsFiducial.nsec;
+		uFiducialId	= tsFiducial.nsec & FIDUCIAL_MASK;
+
+		if ( uFiducialId >= FIDUCIAL_INVALID )
+			throw string( "Invalid Fiducial 0x1FFFF\n" );
+		if (_uFiducialIdPrev == uFiducialId)
+			throw string("Duplicate Fiducial in BLD!\n");
+        _uFiducialIdPrev = uFiducialId;
+
+		if ( sPacket > _uMaxDataSize )
+		    throw string("Data Size is larger than max value\n");
+
+		// Create a BldPacketHeader in our network msg buffer
+		const unsigned int		uDamage = 0;
+		BldPacketHeader		*	pBldPacketHeader = (BldPacketHeader*) lcMsgBuffer;
+		new ( pBldPacketHeader ) BldPacketHeader(	sizeof(lcMsgBuffer),
+													ts.tv_sec, ts.tv_nsec,
+													uFiducialId,
+													uDamage,
+													srcPhysicalId, xtcDataType );
+
+		// Load the packet into the header
+		void		*	pHeaderData	= (void *)(pBldPacketHeader + 1);
+		memcpy( pHeaderData, pPacket, sPacket );
+
+		/* Send out bld */
+		int iFailSend = _apBldNetworkClient->sendRawData( pBldPacketHeader->getPacketSize(), lcMsgBuffer);
+		if ( iFailSend != 0 )
+			throw string( "_apBldNetworkClient->sendRawData() Failed\n" );
+
+		if ( _iDebugLevel >= 2 )
+		{
+			printf( "Sent Bld to Addr %x Port %d Interface %s Fiducial 0x%05X\n",
+			  _uBldServerAddr, _uBldServerPort, _sBldInterfaceIp.c_str(), uFiducialId );
+		}
+	}
+	catch (string& sError)
+	{
+		printf( "BldPvClientBasic::bldSendPacket() : %s\n", sError.c_str() );
+
+		iRetErrorCode = 2;
+	}
+
+    return iRetErrorCode;
+}
+
 bool BldPvClientBasic::IsStarted() const
 {
     return _bBldStarted;
@@ -778,7 +863,9 @@ int BldPvClientBasic::readPv(
         printf( "readPv(): Buffer should be aligned in 32 bits boundaries\n" );
         return 2;
     }
-        
+ 
+	// TODO: No need to use dbNameToAddr, as that restricts us to local PV's only
+	// Update to support ca based PV's
     DBADDR  dbaddrVariable;
     int iStatus = dbNameToAddr(sVariableName,&dbaddrVariable);  
     if ( iStatus != 0 )
