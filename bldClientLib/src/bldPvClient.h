@@ -19,6 +19,11 @@ public:
     virtual int bldStart() = 0;
     virtual int bldStop()  = 0;
     virtual bool IsStarted() const  = 0;
+    virtual int bldConfigSend(	const char		*	sAddr,
+								unsigned short		uPort, 
+								unsigned int		srcId,
+								unsigned int		xtcType,
+								unsigned int		uMaxDataSize ) = 0;
     virtual int bldConfig( const char* sAddr, unsigned short uPort, 
       unsigned int uMaxDataSize, const char* sInterfaceIp, 
       unsigned int uSrcPyhsicalId, unsigned int uDataType, 
@@ -37,7 +42,7 @@ public:
     virtual int bldSendPacket(
 			unsigned int		srcPhysicalId,
 			unsigned int		xtcDataType,
-			epicsTimeStamp	&	tsFiducial,
+			epicsTimeStamp	*	pTsFiducial,
 			void			*	pPacket,
 			size_t				sPacket	) = 0; 
  
@@ -84,7 +89,7 @@ private:
 extern "C"
 {
 /* 
- * The following functions provide C wrappers for accesing 
+ * The following functions provide C wrappers for accessing 
  * EpicsBld::BldPvClientInterface, combined with BldPvClientFactory functions
  *
  * Since BldPvClientInterface is designed for singleton objects, the functions 
@@ -97,6 +102,12 @@ int BldStop(int id);
 bool BldIsStarted(int id);
 int BldSetControl(int id, int on);
 
+int BldConfigSend(	int					bldClientId,
+					const char		*	sAddr,
+					unsigned short		uPort,
+					unsigned int		srcPhysicalId,
+					unsigned int		xtcDataType,
+					unsigned int		uMaxDataSize	);
 int BldConfig( int id, const char* sAddr, unsigned short uPort, unsigned int uMaxDataSize, const char* sInterfaceIp, 
                unsigned int uSrcPhysicalId, unsigned int uXtcDataType, const char* sBldPvPreTrigger,
                const char* sBldPvPostTrigger, const char* sBldPvFiducial, const char* sBldPvList );
@@ -106,9 +117,10 @@ int BldSetPreSub(int id, const char* sBldSubRec);
 int BldSetPostSub(int id, const char* sBldSubRec);
 int BldPrepareData(int id); 
 int BldSendData(int id); 
-int BldSendPacket(	unsigned int		srcPhysicalId,
+int BldSendPacket(	int					bldClientId,
+					unsigned int		srcPhysicalId,
 					unsigned int		xtcDataType,
-					epicsTimeStamp	&	tsFiducial,
+					epicsTimeStamp	*	pTsFiducial,
 					void			*	pPacket,
 					size_t				sPacket	);
 

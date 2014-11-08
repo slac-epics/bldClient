@@ -149,7 +149,7 @@ public:
     {
         Initialize();
         if (uPhysicalId < NumberOfBldTypeId) {
-            ltXtcDataTypeByBldType[uPhysicalId] = (XtcDataType) uDataType;
+            ltXtcDataTypeByBldType[uPhysicalId] = (XtcDataType) ( uDataType & 0xFFFF );
             liBldPacketSizeByBldType[uPhysicalId] = pktsize;
             lfuncSetvFunctionTable[uPhysicalId] = func;
         }
@@ -159,6 +159,8 @@ public:
     {
         return (unsigned int)  setu32LE(uExtentSize) + 10 * sizeof(uint32_t);
     }
+    
+	void setPacketSize( unsigned int	sData );
 
     int setPvValue( int iPvIndex, void* pPvValue );
     

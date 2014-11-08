@@ -36,85 +36,99 @@ extern "C"
  * on the singelton objectdirectly. Therefore no object lifetime management 
  * function is provided.
  */
-int BldStart(int id)
+int BldStart(int bldClientId)
 {
-    return EpicsBld::BldPvClientFactory::getSingletonBldPvClient(id).bldStart();
+    return EpicsBld::BldPvClientFactory::getSingletonBldPvClient(bldClientId).bldStart();
 }
 
-int BldStop(int id)
+int BldStop(int bldClientId)
 {
-    return EpicsBld::BldPvClientFactory::getSingletonBldPvClient(id).bldStop();    
+    return EpicsBld::BldPvClientFactory::getSingletonBldPvClient(bldClientId).bldStop();    
 }
 
-bool BldIsStarted(int id)
+bool BldIsStarted(int bldClientId)
 {
-    return EpicsBld::BldPvClientFactory::getSingletonBldPvClient(id).IsStarted();
+    return EpicsBld::BldPvClientFactory::getSingletonBldPvClient(bldClientId).IsStarted();
 }
 
-int BldSetControl(int id, int on)
+int BldSetControl(int bldClientId, int on)
 {
     if (on) {
-        if (!BldIsStarted(id))
-            return BldStart(id);
+        if (!BldIsStarted(bldClientId))
+            return BldStart(bldClientId);
     } else {
-        if (BldIsStarted(id))
-            return BldStop(id);
+        if (BldIsStarted(bldClientId))
+            return BldStop(bldClientId);
     }
     return 1;
 }
 
-int BldConfig(int id, const char* sAddr, unsigned short uPort, 
-  unsigned int uMaxDataSize, const char* sInterfaceIp, unsigned int uSrcPhysicalId, 
-  unsigned int uxtcDataType, const char* sBldPvPreTrigger, const char* sBldPvPostTrigger, 
-  const char* sBldPvFiducial, const char* sBldPvList )
+int BldConfigSend(
+	int				bldClientId,
+	const char	*	sAddr,
+	unsigned short	uPort,
+	unsigned int	srcId,
+	unsigned int	xtcType,
+	unsigned int	uMaxDataSize	)
 {
-    return EpicsBld::BldPvClientFactory::getSingletonBldPvClient(id).bldConfig(
+    return EpicsBld::BldPvClientFactory::getSingletonBldPvClient(bldClientId).bldConfigSend(	sAddr, uPort, srcId, xtcType, uMaxDataSize );
+}
+
+int BldConfig(int bldClientId, const char* sAddr, unsigned short uPort, 
+  unsigned int uMaxDataSize,	const char* sInterfaceIp,
+  unsigned int uSrcPhysicalId,	unsigned int uxtcDataType,
+  const char* sBldPvPreTrigger,	const char* sBldPvPostTrigger, 
+  const char* sBldPvFiducial,	const char* sBldPvList )
+{
+    return EpicsBld::BldPvClientFactory::getSingletonBldPvClient(bldClientId).bldConfig(
             sAddr, uPort, uMaxDataSize, sInterfaceIp, uSrcPhysicalId, uxtcDataType, sBldPvPreTrigger,
             sBldPvPostTrigger, sBldPvFiducial, sBldPvList);
 }
 
-void BldShowConfig(int id)
+void BldShowConfig(int bldClientId)
 {
-    return EpicsBld::BldPvClientFactory::getSingletonBldPvClient(id).bldShowConfig();
+    return EpicsBld::BldPvClientFactory::getSingletonBldPvClient(bldClientId).bldShowConfig();
 }
 
-int BldSetPreSub(int id, const char* sBldSubRec)
+int BldSetPreSub(int bldClientId, const char* sBldSubRec)
 {
-    return EpicsBld::BldPvClientFactory::getSingletonBldPvClient(id).bldSetPreSub(sBldSubRec);
+    return EpicsBld::BldPvClientFactory::getSingletonBldPvClient(bldClientId).bldSetPreSub(sBldSubRec);
 }
 
-int BldSetPostSub(int id, const char* sBldSubRec)
+int BldSetPostSub(int bldClientId, const char* sBldSubRec)
 {
-    return EpicsBld::BldPvClientFactory::getSingletonBldPvClient(id).bldSetPostSub(sBldSubRec);
+    return EpicsBld::BldPvClientFactory::getSingletonBldPvClient(bldClientId).bldSetPostSub(sBldSubRec);
 }
 
-int BldPrepareData(int id)
+int BldPrepareData(int bldClientId)
 {
-    return EpicsBld::BldPvClientFactory::getSingletonBldPvClient(id).bldPrepareData();
+    return EpicsBld::BldPvClientFactory::getSingletonBldPvClient(bldClientId).bldPrepareData();
 }
 
-int BldSendData(int id)
+int BldSendData(int bldClientId)
 {
-    return EpicsBld::BldPvClientFactory::getSingletonBldPvClient(id).bldSendData();
+    return EpicsBld::BldPvClientFactory::getSingletonBldPvClient(bldClientId).bldSendData();
 }
 
-int BldSendPacket(	unsigned int		id,
-					unsigned int		xtc,
-					epicsTimeStamp	&	ts,
+int BldSendPacket(	int					bldClientId,
+					unsigned int		srcId,
+					unsigned int		xtcType,
+					epicsTimeStamp	*	pts,
 					void			*	pPkt,
 					size_t				sPkt	)
 {
-    return EpicsBld::BldPvClientFactory::getSingletonBldPvClient(id).bldSendPacket( id, xtc, ts, pPkt, sPkt );
+//	printf( "BldSendPacket: client %d, srcId %u, xtc %u, pPkt 0x%p, sPkt %zd\n", bldClientId, srcId, xtcType, pPkt, sPkt );
+    return EpicsBld::BldPvClientFactory::getSingletonBldPvClient(bldClientId).bldSendPacket( srcId, xtcType, pts, pPkt, sPkt );
 }
 
-void BldSetDebugLevel(int id, int iDebugLevel)
+void BldSetDebugLevel(int bldClientId, int iDebugLevel)
 {
-    EpicsBld::BldPvClientFactory::getSingletonBldPvClient(id).setDebugLevel(iDebugLevel);
+    EpicsBld::BldPvClientFactory::getSingletonBldPvClient(bldClientId).setDebugLevel(iDebugLevel);
 }
 
-int BldGetDebugLevel(int id)
+int BldGetDebugLevel(int bldClientId)
 {
-    return EpicsBld::BldPvClientFactory::getSingletonBldPvClient(id).getDebugLevel();
+    return EpicsBld::BldPvClientFactory::getSingletonBldPvClient(bldClientId).getDebugLevel();
 }
  
 } // extern "C"
@@ -138,6 +152,9 @@ public:
     virtual int bldStart();
     virtual int bldStop();
     virtual bool IsStarted() const;
+    virtual int bldConfigSend(	const char	*	sAddr,	unsigned short	uPort,
+								unsigned int	srcId,	unsigned int	xtcType,
+								unsigned int	uMaxDataSize );
     virtual int bldConfig( const char* sAddr, unsigned short uPort,
       unsigned int uMaxDataSize, const char* sInterfaceIp, 
       unsigned int uSrcPhysicalId, unsigned int uxtcDataType, 
@@ -155,15 +172,22 @@ public:
     virtual int bldSendPacket(
 			unsigned int		srcPhysicalId,
 			unsigned int		xtcDataType,
-			epicsTimeStamp	&	tsFiducial,
+			epicsTimeStamp	*	pTsFiducial,
 			void			*	pPacket,
 			size_t				sPacket	); 
 
     // debug information control
     virtual void setDebugLevel(int iDebugLevel);
-    virtual int getDebugLevel();    
-    
-    static BldPvClientBasic& getSingletonObject(int id); // singelton interface
+    virtual int getDebugLevel();
+
+	const char * GetInterfaceIp( ) const
+	{
+		if ( _sBldInterfaceIp.size() > 0 )
+			return _sBldInterfaceIp.c_str();
+		return "--default--";
+	}
+
+    static BldPvClientBasic& getSingletonObject(int bldClientId); // singelton interface
     
 private:
     bool _bBldStarted;
@@ -208,7 +232,7 @@ private:
     static int printPv(const char *sVariableName, void* pBuffer, 
       short iValueType = DBR_STRING, long lNumElements = 1 );
     static int sprintPv(const char *sVariableName, void* pBuffer, 
-      int iMsgBufferSize, char* lcMsgBuffer, int* piRealMsgSize, 
+      int iMsgBufferSize, char* lcMsgBuffer2, int* piRealMsgSize, 
       short iValueType = DBR_STRING, long lNumElements = 1 );
 };
 
@@ -222,9 +246,9 @@ namespace EpicsBld
 /**
  * class BldPvClientFactory
  */
-BldPvClientInterface& BldPvClientFactory::getSingletonBldPvClient(int id)
+BldPvClientInterface& BldPvClientFactory::getSingletonBldPvClient(int bldClientId)
 {
-    return BldPvClientBasic::getSingletonObject(id);
+    return BldPvClientBasic::getSingletonObject(bldClientId);
 }
 
 /*
@@ -239,10 +263,11 @@ const char BldPvClientBasic::sPvListSeparators[] = " ,;\r\n";
 
 /* static member functions */
  
-BldPvClientBasic& BldPvClientBasic::getSingletonObject(int id)
+BldPvClientBasic& BldPvClientBasic::getSingletonObject(int bldClientId)
 {
     static BldPvClientBasic bldDataClient[10]; // Ick!
-    return bldDataClient[id];
+	assert( bldClientId < 10 );
+    return bldDataClient[bldClientId];
 }
 
 /* public member functions */
@@ -606,14 +631,14 @@ int BldPvClientBasic::bldSendData()
 			}
 			return 2;
 		}
-                if ( _iDebugLevel < 0 )
-                    printf( "bldSendData: Cur Fiducial Id 0x%05X, Prev Fiducial Id 0x%05X\n", uFiducialId, _uFiducialIdPrev ); 
+        if ( _iDebugLevel < 0 )
+			printf( "bldSendData: Cur Fiducial Id 0x%05X, Prev Fiducial Id 0x%05X\n", uFiducialId, _uFiducialIdPrev ); 
 
-                if (_uFiducialIdPrev == uFiducialId) {
-                    throw string("Duplicate Fiducial in BLD!\n");
-                    return 2;
-                }
-                _uFiducialIdPrev = uFiducialId;
+        if (_uFiducialIdPrev == uFiducialId) {
+			throw string("Duplicate Fiducial in BLD!\n");
+			return 2;
+        }
+        _uFiducialIdPrev = uFiducialId;
 	 
 		// Create a BldPacketHeader
 		const unsigned int uDamage = 0;
@@ -673,12 +698,13 @@ int BldPvClientBasic::bldSendData()
 // Use this form when caller has already packed the data into
 // a buffer and has a timestamp w/ a valid fiducial
 int BldPvClientBasic::bldSendPacket(
-	unsigned int			srcPhysicalId,
-	unsigned int			xtcDataType,
-	epicsTimeStamp		&	tsFiducial,
-	void				*	pPacket,
-	size_t					sPacket	)
+	unsigned int		srcPhysicalId,
+	unsigned int		xtcDataType,
+	epicsTimeStamp	*	pTsFiducial,
+	void			*	pPacket,
+	size_t				sPacket	)
 {
+	const char		*	functionName = "BldPvClientBasic::bldSendPacket";
     if ( !_bBldStarted )
         return 1; // return status, without error report
 
@@ -693,10 +719,9 @@ int BldPvClientBasic::bldSendPacket(
 		struct timespec		ts;
 		unsigned int		uFiducialId;
 		/* New regime - Use the fiducial timestamp! */
-		ts.tv_sec	= tsFiducial.secPastEpoch + POSIX_TIME_AT_EPICS_EPOCH;
-		ts.tv_nsec	= tsFiducial.nsec;
-		uFiducialId	= tsFiducial.nsec & FIDUCIAL_MASK;
-
+		ts.tv_sec	= pTsFiducial->secPastEpoch + POSIX_TIME_AT_EPICS_EPOCH;
+		ts.tv_nsec	= pTsFiducial->nsec;
+		uFiducialId	= pTsFiducial->nsec & FIDUCIAL_MASK;
 		if ( uFiducialId >= FIDUCIAL_INVALID )
 			throw string( "Invalid Fiducial 0x1FFFF\n" );
 		if (_uFiducialIdPrev == uFiducialId)
@@ -715,20 +740,29 @@ int BldPvClientBasic::bldSendPacket(
 													uDamage,
 													srcPhysicalId, xtcDataType );
 
-		// Load the packet into the header
+		// Get ptr and size for data buffer
+		// The lcMsgBuffer starts w/ a BldPacketHeader object,
+		// which is then followed by the data buffer which must
+		// fit into the one jumbo MTU sized buffer.
 		void		*	pHeaderData	= (void *)(pBldPacketHeader + 1);
+		size_t			sMsgBufferLeft	= sizeof(lcMsgBuffer) - sizeof(BldPacketHeader);
+		if ( sPacket > sMsgBufferLeft )
+		    throw string( "bldSendPacket: Error, Packet too large for buffer!\n");
+
+		// Load the packet into the header
 		memcpy( pHeaderData, pPacket, sPacket );
+		assert( ((char *)pHeaderData - lcMsgBuffer) == sizeof(BldPacketHeader) );
+		pBldPacketHeader->setPacketSize( sPacket );
 
 		/* Send out bld */
-//		int iFailSend = _apBldNetworkClient->sendRawData( pBldPacketHeader->getPacketSize(), lcMsgBuffer);
 		int iFailSend = _apBldNetworkClient->sendRawData( sizeof(BldPacketHeader) + sPacket, lcMsgBuffer);
 		if ( iFailSend != 0 )
-			throw string( "_apBldNetworkClient->sendRawData() Failed\n" );
+			throw string( "bldSendPacket: _apBldNetworkClient->sendRawData() Failed\n" );
 
 		if ( _iDebugLevel >= 2 )
 		{
-			printf( "Sent Bld to Addr %x Port %d Interface %s Fiducial 0x%05X\n",
-			  _uBldServerAddr, _uBldServerPort, _sBldInterfaceIp.c_str(), uFiducialId );
+			printf( "Sent Bld to Addr %x Port %d Interface %s sPkt %zu Fiducial 0x%05X\n",
+			  _uBldServerAddr, _uBldServerPort, GetInterfaceIp(), sPacket, uFiducialId );
 		}
 	}
 	catch (string& sError)
@@ -746,10 +780,47 @@ bool BldPvClientBasic::IsStarted() const
     return _bBldStarted;
 }
 
+int BldPvClientBasic::bldConfigSend(
+	const char		*	sAddr,
+	unsigned short		uPort, 
+	unsigned int		srcId,
+	unsigned int		xtcType,
+	unsigned int		uMaxDataSize  )
+{
+    BldPacketHeader::Initialize();
+
+    if ( _bBldStarted )
+    {
+        printf( "BldPvClientBasic::bldConfigSend() : Need to stop bld before config\n" );
+        return 1;
+    }
+            
+    // Check for valid parameters
+    if ( sAddr == NULL || uMaxDataSize <= 0 ) 
+    {
+        printf( "BldPvClientBasic::bldConfigSend() : Input parameter invalid\n" );
+        return 2;
+    }
+
+    printf( "Configuring bld:\n" );
+    
+    _uBldServerAddr = ntohl( inet_addr( sAddr ) );
+    _uBldServerPort = uPort;
+    _uMaxDataSize = uMaxDataSize;
+    _uSrcPhysicalId = srcId;
+    _uxtcDataType = xtcType;
+    _sBldInterfaceIp.assign( "" );
+	BldRegister( srcId, xtcType & 0xFFFF, uMaxDataSize, 0 );
+
+    bldShowConfig();
+    
+    return 0;
+}
+
 int BldPvClientBasic::bldConfig( const char* sAddr, unsigned short uPort, 
   unsigned int uMaxDataSize, const char* sInterfaceIp, unsigned int uSrcPhysicalId, unsigned int uxtcDataType, 
   const char* sBldPvPreTrigger, const char* sBldPvPostTrigger, const char* sBldPvFiducial, const char* sBldPvList )
-{   
+{
     BldPacketHeader::Initialize();
 
     if ( _bBldStarted )
@@ -789,37 +860,49 @@ void BldPvClientBasic::bldShowConfig()
     unsigned int uServerNetworkAddr = htonl(_uBldServerAddr);
     unsigned char* pcAddr = (unsigned char*) &uServerNetworkAddr;
     printf( "  Configurable parameters:\n"
-      "    Server Addr %u.%u.%u.%u  Port %d  MaxDataSize %u MCastIF %s\n"
-      "    Source Id %d Data Version %d Data Type %d (0x%X)\n"
-      "    PvPreTrigger <%s>\n"
-	  "    PvPostTrigger <%s>\n"
-	  "    PvFiducial <%s>\n"
-      "    PvList <%s>\n",
+      "    Server Addr %u.%u.%u.%u  Port %d  MaxDataSize %u\n"
+	  "    MulticastIF %s\n"
+	  "    Source Id %d Data Version %d Data Type %d (0x%X)\n",
       pcAddr[0], pcAddr[1], pcAddr[2], pcAddr[3],
-      _uBldServerPort, _uMaxDataSize, _sBldInterfaceIp.c_str(), 
-	  _uSrcPhysicalId,
-      (_uxtcDataType>>16), (_uxtcDataType&0xFFFF), _uxtcDataType,
-	  _sBldPvPreTrigger.c_str(), _sBldPvPostTrigger.c_str(),
-	  _sBldPvFiducial.c_str(),   _sBldPvList.c_str() );
+      _uBldServerPort, _uMaxDataSize,
+	  GetInterfaceIp(), _uSrcPhysicalId,
+	  (_uxtcDataType>>16), (_uxtcDataType&0xFFFF), _uxtcDataType );
 
-    printf( "  Internal Settings:\n"
-      "    Pre  Subroutine Record <%s>  PvPreTrigger.FLNK <%s>\n"
-      "    Post Subroutine Record <%s>  PvPostTrigger.FLNK <%s>\n"
-      "    DebugLevel %d\n",
-      _sBldPvPreSubRec.c_str(), _sBldPvPreTriggerPrevFLNK.c_str(),
-      _sBldPvPostSubRec.c_str(), _sBldPvPostTriggerPrevFLNK.c_str(),
-      _iDebugLevel );      
-	if ( _sBldPvPreTrigger == _sBldPvPreSubRec )
+	if ( _sBldPvPostTrigger.size() == 0 && _sBldPvList.size() == 0 )
 	{
-		printf( "WARNING: PvPreTrigger is same PV as %s!\n", _sBldPvPreSubRec.c_str() );
-		printf( "Normally, PvPreTrigger should be the name of a local PV\n"
-				"that processes when the fiducial is ready to fetch.\n" );
+		printf( "BLD Configured w/o PV dependencies.\n"
+				"Use BldSendPacket() from driver code to send packets\n" );
 	}
-	if ( _sBldPvPostTrigger == _sBldPvPostSubRec )
+	else
 	{
-		printf( "WARNING: PvPostTrigger is same PV as %s!\n", _sBldPvPostSubRec.c_str() );
-		printf( "Normally, PvPostTrigger should be the name of a local PV\n"
-				"that you want to process after the BLD data has been sent.\n" );
+		// Simple BldConfigSend doesn't need the following config values
+		printf(
+		  "    PvPreTrigger <%s>\n"
+		  "    PvPostTrigger <%s>\n"
+		  "    PvFiducial <%s>\n"
+		  "    PvList <%s>\n",
+		  _sBldPvPreTrigger.c_str(), _sBldPvPostTrigger.c_str(),
+		  _sBldPvFiducial.c_str(),   _sBldPvList.c_str() );
+
+		printf( "  Internal Settings:\n"
+		  "    Pre  Subroutine Record <%s>  PvPreTrigger.FLNK <%s>\n"
+		  "    Post Subroutine Record <%s>  PvPostTrigger.FLNK <%s>\n"
+		  "    DebugLevel %d\n",
+		  _sBldPvPreSubRec.c_str(), _sBldPvPreTriggerPrevFLNK.c_str(),
+		  _sBldPvPostSubRec.c_str(), _sBldPvPostTriggerPrevFLNK.c_str(),
+		  _iDebugLevel );      
+		if ( _sBldPvPreTrigger.size() != 0 && _sBldPvPreTrigger == _sBldPvPreSubRec )
+		{
+			printf( "WARNING: PvPreTrigger is same PV as %s!\n", _sBldPvPreSubRec.c_str() );
+			printf( "Normally, PvPreTrigger should be the name of a local PV\n"
+					"that processes when the fiducial is ready to fetch.\n" );
+		}
+		if ( _sBldPvPostTrigger.size() != 0 && _sBldPvPostTrigger == _sBldPvPostSubRec )
+		{
+			printf( "WARNING: PvPostTrigger is same PV as %s!\n", _sBldPvPostSubRec.c_str() );
+			printf( "Normally, PvPostTrigger should be the name of a local PV\n"
+					"that you want to process after the BLD data has been sent.\n" );
+		}
 	}
 }
 

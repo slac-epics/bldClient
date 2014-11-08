@@ -21,8 +21,8 @@ static const iocshArg     BldConfigArgs[] =
     {"uPort", iocshArgInt},
     {"uMaxDataSize", iocshArgInt},
     {"sInterfaceIp", iocshArgString},
-    {"uSrcPyhsicalId", iocshArgInt},
-    {"iDataType", iocshArgInt},
+    {"uSrcPhysicalId", iocshArgInt},
+    {"iXtcDataType", iocshArgInt},
     {"sBldPvPreTrigger", iocshArgString},
     {"sBldPvPostTrigger", iocshArgString},
     {"sBldPvFiducial", iocshArgString},
@@ -62,11 +62,26 @@ static const iocshArg     BldSetDebugLevelArgs[] =
 static const iocshArg*    BldSetDebugLevelArgPtrs[] = 
 { BldSetDebugLevelArgs };
 
+static const iocshArg     BldConfigSendArgs[] = 
+{
+    {"sAddr", iocshArgString},
+    {"uPort", iocshArgInt},
+    {"uSrcPhysicalId", iocshArgInt},
+    {"iXtcDataType", iocshArgInt},
+    {"uMaxDataSize", iocshArgInt},
+};
+static const iocshArg*    BldConfigSendArgPtrs[] = 
+{ 
+	BldConfigSendArgs,		BldConfigSendArgs+1,	BldConfigSendArgs+2,
+	BldConfigSendArgs+3,	BldConfigSendArgs+4
+};
+
 static const iocshFuncDef iocShBldSetIDFuncDef = {"BldSetID", 1, BldSetIDArgPtrs};
 static const iocshFuncDef iocShBldStartFuncDef = {"BldStart", 0, NULL};
 static const iocshFuncDef iocShBldStopFuncDef = {"BldStop", 0, NULL};
 static const iocshFuncDef iocShBldIsStartedFuncDef = {"BldIsStarted", 0, NULL};
 static const iocshFuncDef iocShBldConfigFuncDef = {"BldConfig", 10, BldConfigArgPtrs};
+static const iocshFuncDef iocShBldConfigSendFuncDef = {"BldConfigSend", 5, BldConfigSendArgPtrs};
 static const iocshFuncDef iocShBldShowConfigFuncDef = {"BldShowConfig", 0, NULL};
 static const iocshFuncDef iocShBldSetPreSubFuncDef = {"BldSetPreSub", 1, BldSetPreSubArgPtrs};
 static const iocshFuncDef iocShBldSetPostSubFuncDef = {"BldSetPostSub", 1, BldSetPostSubArgPtrs};
@@ -104,6 +119,12 @@ static void iocShBldConfigCallFunc(const iocshArgBuf *args)
 {
     BldConfig( bldidx, args[0].sval, args[1].ival, args[2].ival, args[3].sval, args[4].ival, args[5].ival,
                args[6].sval, args[7].sval, args[8].sval, args[9].sval  );
+}
+
+static void iocShBldConfigSendCallFunc(const iocshArgBuf *args) 
+{
+    BldConfigSend( bldidx,	args[0].sval, args[1].ival, args[2].ival,
+							args[3].ival, args[4].ival	);
 }
 
 static void iocShBldShowConfigCallFunc(const iocshArgBuf *args) 
@@ -151,7 +172,9 @@ static void iocShBldStopRegister(void)
 static void iocShBldIsStartedRegister(void) 
   { iocshRegister(&iocShBldIsStartedFuncDef, iocShBldIsStartedCallFunc); }
 static void iocShBldConfigRegister(void) 
-  { iocshRegister(&iocShBldConfigFuncDef, iocShBldConfigCallFunc); }
+  { iocshRegister( &iocShBldConfigFuncDef, iocShBldConfigCallFunc); }
+static void iocShBldConfigSendRegister(void) 
+  { iocshRegister( &iocShBldConfigSendFuncDef, iocShBldConfigSendCallFunc); }
 static void iocShBldShowConfigRegister(void) 
   { iocshRegister(&iocShBldShowConfigFuncDef, iocShBldShowConfigCallFunc); }
 static void iocShBldSetPreSubRegister(void) 
@@ -172,6 +195,7 @@ epicsExportRegistrar(iocShBldStartRegister);
 epicsExportRegistrar(iocShBldStopRegister);
 epicsExportRegistrar(iocShBldIsStartedRegister);
 epicsExportRegistrar(iocShBldConfigRegister);
+epicsExportRegistrar(iocShBldConfigSendRegister);
 epicsExportRegistrar(iocShBldShowConfigRegister);
 epicsExportRegistrar(iocShBldSetPreSubRegister);
 epicsExportRegistrar(iocShBldSetPostSubRegister);

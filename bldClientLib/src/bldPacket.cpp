@@ -42,20 +42,19 @@ BldPacketHeader::BldPacketHeader(
         uExtentSize = 0;
         return;
     }
-   
-    unsigned int uExtentSize1 = sizeof(BldPacketHeader) - 10 * sizeof(uint32_t) + liBldPacketSizeByBldType[uPhysicalId1];
-        
-    if ( uExtentSize1 > uMaxPacketSize )
+
+  	// Set the packet size to the max for this BLDType
+    setPacketSize( liBldPacketSizeByBldType[uPhysicalId1] );
+ 
+  	// Check if packet is too large
+    if ( (unsigned int)setu32LE(uExtentSize) > uMaxPacketSize )
     {
-        printf( "BldPacketHeader::BldPacketHeader() Packet size (%u) is larger than given buffer size (%u) \n",
-            (unsigned int) uExtentSize1, uMaxPacketSize );
+        printf(	"BldPacketHeader::BldPacketHeader() Packet size (%u) is larger than given buffer size (%u) \n",
+				(unsigned int)setu32LE(uExtentSize), uMaxPacketSize );
             
         uDamage = setu32LE(uDamgeTrue);
         uExtentSize = 0;
-        return;
     }
-    
-    uExtentSize = setu32LE(uExtentSize1);
  
     int xtcDataType = uDataType1 & 0xFFFF;
     if ( xtcDataType != ltXtcDataTypeByBldType[uPhysicalId1] )
@@ -63,7 +62,7 @@ BldPacketHeader::BldPacketHeader(
         printf( "BldPacketHeader::BldPacketHeader() Input argument uDataType value (%lu) is "
           "not compatible with physical id %lu. Expected uDataType value = %d.\n",
             (unsigned long) xtcDataType, (unsigned long) uPhysicalId1, ltXtcDataTypeByBldType[uPhysicalId1] );
-            
+ 
         uDamage = setu32LE(uDamgeTrue);
         uExtentSize = 0;
     }
@@ -76,6 +75,28 @@ BldPacketHeader::BldPacketHeader(
     uExtentSize2 = uExtentSize;        
 }
     
+void BldPacketHeader::setPacketSize( unsigned int sData )
+{
+	uint32_t uExtentSize1 = sizeof(BldPacketHeader) - 10 * sizeof(uint32_t);
+ 
+    if ( sData <= (uint32_t) liBldPacketSizeByBldType[ setu32LE(uPhysicalId) ] )
+    {
+		uExtentSize1 += sData;
+		uExtentSize = setu32LE(uExtentSize1);
+    }
+	else
+    {
+        printf( "BldPacketHeader::BldPacketHeader() data size (%u) larger than max for this BLDType (%u)\n",
+				sData, liBldPacketSizeByBldType[ setu32LE(uPhysicalId)  ] );
+ 
+        uDamage = setu32LE(uDamgeTrue);
+        uExtentSize = 0;
+    }
+ 
+	return;
+}
+
+
 int BldPacketHeader::setPvValue( int iPvIndex, void* pPvValue )
 {
     TSetPvFuncPointer fn = this->lfuncSetvFunctionTable[ setu32LE(uPhysicalId) ];
