@@ -6,6 +6,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <string.h>
 
 #include <dbDefs.h>
 #include <registryFunction.h>
@@ -719,7 +720,8 @@ int BldPvClientBasic::bldSendPacket(
 		memcpy( pHeaderData, pPacket, sPacket );
 
 		/* Send out bld */
-		int iFailSend = _apBldNetworkClient->sendRawData( pBldPacketHeader->getPacketSize(), lcMsgBuffer);
+//		int iFailSend = _apBldNetworkClient->sendRawData( pBldPacketHeader->getPacketSize(), lcMsgBuffer);
+		int iFailSend = _apBldNetworkClient->sendRawData( sizeof(BldPacketHeader) + sPacket, lcMsgBuffer);
 		if ( iFailSend != 0 )
 			throw string( "_apBldNetworkClient->sendRawData() Failed\n" );
 
