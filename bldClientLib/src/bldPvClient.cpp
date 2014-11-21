@@ -668,7 +668,7 @@ int BldPvClientBasic::bldSendData()
 			if ( iFail != 0 )
 				throw string("pBldPacketHeader->setPvValue() for PV ") + sBldPv + ") Failed\n";
 		}
-		
+
 		//if ( uDataSize > _uMaxDataSize )
 		//    throw string("Data Size is larger than max value\n");
 					
@@ -704,7 +704,6 @@ int BldPvClientBasic::bldSendPacket(
 	void			*	pPacket,
 	size_t				sPacket	)
 {
-	const char		*	functionName = "BldPvClientBasic::bldSendPacket";
     if ( !_bBldStarted )
         return 1; // return status, without error report
 
@@ -729,7 +728,7 @@ int BldPvClientBasic::bldSendPacket(
         _uFiducialIdPrev = uFiducialId;
 
 		if ( sPacket > _uMaxDataSize )
-		    throw string("Data Size is larger than max value\n");
+		    throw string("Packet Size is larger than max value\n");
 
 		// Create a BldPacketHeader in our network msg buffer
 		const unsigned int		uDamage = 0;
@@ -950,7 +949,7 @@ int BldPvClientBasic::readPv(
     }
  
 	// TODO: No need to use dbNameToAddr, as that restricts us to local PV's only
-	// Update to support ca based PV's
+	// Update to support ca based PV's via dbGetLink and dbGetTimeStamp
     DBADDR  dbaddrVariable;
     int iStatus = dbNameToAddr(sVariableName,&dbaddrVariable);  
     if ( iStatus != 0 )

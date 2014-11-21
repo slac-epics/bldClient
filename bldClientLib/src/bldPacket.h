@@ -14,11 +14,20 @@ public:
     /* 
      * Memory Mapped Data
      */
-    uint32_t uSecs;
+#if 1
     uint32_t uNanoSecs;
+    uint32_t uSecs;
     uint32_t uMBZ1;
     uint32_t uFiducialId;
     uint32_t uMBZ2;
+#else
+	// Per Matt weaver 11/20/2014
+    uint32_t uClockLow;		// nanoseconds
+    uint32_t uClockHigh;	// seconds
+    uint32_t uStampLow;		// 119MHz ticks
+    uint32_t uStampHigh;	// Fiducial
+    uint32_t uEnv;
+#endif
 
     // Xtc Section 1
     uint32_t uDamage;

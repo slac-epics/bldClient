@@ -23,11 +23,11 @@ BldPacketHeader::BldPacketHeader(
     uint32_t        uDamage1,
     uint32_t        uPhysicalId1,
     uint32_t        uDataType1  )
-    :   uSecs(          setu32LE(uSecs1)        ),
-        uNanoSecs(      setu32LE(uNanoSecs1)    ),
-        uMBZ1(          0                       ), 
-        uFiducialId(    setu32LE(uFiducialId1)  ),
-        uMBZ2(          0                       ),
+    :   uNanoSecs(		setu32LE(uNanoSecs1)    ),
+		uSecs(			setu32LE(uSecs1)        ),
+        uMBZ1(			0                       ), 
+        uFiducialId(	setu32LE(uFiducialId1)  ),
+        uMBZ2(			0                       ),
         uDamage(        setu32LE(uDamage1)      ), 
         uLogicalId(     setu32LE(uBldLogicalId) ),
         uPhysicalId(    setu32LE(uPhysicalId1)  ),
@@ -39,7 +39,8 @@ BldPacketHeader::BldPacketHeader(
             (unsigned long) uPhysicalId1 );
             
         uDamage = setu32LE(uDamgeTrue);
-        uExtentSize = 0;
+        uExtentSize  = 0;
+        uExtentSize2 = 0;
         return;
     }
 
@@ -53,7 +54,8 @@ BldPacketHeader::BldPacketHeader(
 				(unsigned int)setu32LE(uExtentSize), uMaxPacketSize );
             
         uDamage = setu32LE(uDamgeTrue);
-        uExtentSize = 0;
+        uExtentSize  = 0;
+        uExtentSize2 = 0;
     }
  
     int xtcDataType = uDataType1 & 0xFFFF;
@@ -64,7 +66,8 @@ BldPacketHeader::BldPacketHeader(
             (unsigned long) xtcDataType, (unsigned long) uPhysicalId1, ltXtcDataTypeByBldType[uPhysicalId1] );
  
         uDamage = setu32LE(uDamgeTrue);
-        uExtentSize = 0;
+        uExtentSize  = 0;
+        uExtentSize2 = 0;
     }
     
     // Mirror Xtc Section 1 to Section 2
@@ -77,12 +80,13 @@ BldPacketHeader::BldPacketHeader(
     
 void BldPacketHeader::setPacketSize( unsigned int sData )
 {
-	uint32_t uExtentSize1 = sizeof(BldPacketHeader) - 10 * sizeof(uint32_t);
+	uint32_t uExtentSizeTmp = sizeof(BldPacketHeader) - 10 * sizeof(uint32_t);
  
     if ( sData <= (uint32_t) liBldPacketSizeByBldType[ setu32LE(uPhysicalId) ] )
     {
-		uExtentSize1 += sData;
-		uExtentSize = setu32LE(uExtentSize1);
+		uExtentSizeTmp += sData;
+		uExtentSize  = setu32LE(uExtentSizeTmp);
+		uExtentSize2 = setu32LE(uExtentSizeTmp);
     }
 	else
     {
@@ -90,7 +94,8 @@ void BldPacketHeader::setPacketSize( unsigned int sData )
 				sData, liBldPacketSizeByBldType[ setu32LE(uPhysicalId)  ] );
  
         uDamage = setu32LE(uDamgeTrue);
-        uExtentSize = 0;
+        uExtentSize  = 0;
+        uExtentSize2 = 0;
     }
  
 	return;
