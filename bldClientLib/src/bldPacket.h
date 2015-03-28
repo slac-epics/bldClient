@@ -48,7 +48,7 @@ public:
      */
      
     // Imported from PDS repository: pdsdata/xtc/BldInfo.hh : BldInfo::Type
-	// /reg/g/pcds/dist/pds/sxr/princeton_tomy/pdsdata/xtc/BldInfo.hh
+	// /reg/g/pcds/dist/pds/current/build/pdsdata/include/pdsdata/xtc/BldInfo.hh 
     // Note that this is only the ones *we* handle!  Max is set large for the future!
     enum BldTypeId	{	EBeam, PhaseCavity, FEEGasDetEnergy,
 						Nh2Sb1Ipm01,  
@@ -72,7 +72,7 @@ public:
      */
  
     // Imported from PDS repository: pdsdata/xtc/TypeId.hh : TypId::Type
-	// /reg/g/pcds/dist/pds/sxr/princeton_tomy/pdsdata/xtc/TypeId.hh
+	// /reg/g/pcds/dist/pds/current/build/pdsdata/include/pdsdata/xtc/TypeId.hh 
     // Note that this is only the ones *we* handle!  Max is set large for the future!
     enum XtcDataType 
     {
@@ -150,6 +150,10 @@ public:
     BldPacketHeader( unsigned int uMaxPacketSize, uint32_t uSecs1, uint32_t uNanoSecs1, uint32_t uFiducialId1, 
       uint32_t uDamage1, uint32_t uPhysicalId1, uint32_t uDataType1);
 
+    BldPacketHeader( );
+
+	int Setup(	unsigned int	sData,		uint32_t	uSecs1,		uint32_t	uNSecs,
+				uint32_t		uFiducial,	uint32_t	uPhysId,	uint32_t	uXtcType	);
 
     static void Initialize(void);
 
@@ -172,7 +176,7 @@ public:
 	void setPacketSize( unsigned int	sData );
 
     int setPvValue( int iPvIndex, void* pPvValue );
-    
+
 private:    
     static const uint32_t uBldLogicalId = 0x06000000; // from PDS Repository: pdsdata/xtc/Level.hh: Level::Reporter            
     static const uint32_t uDamgeTrue = 0x4000; // from Bld ICD

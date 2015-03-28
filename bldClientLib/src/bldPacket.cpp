@@ -77,7 +77,56 @@ BldPacketHeader::BldPacketHeader(
     uDataType2 = uDataType;
     uExtentSize2 = uExtentSize;        
 }
-    
+
+BldPacketHeader::BldPacketHeader( )
+    :   uNanoSecs(		0		),
+		uSecs(			0		),
+        uMBZ1(			0		),
+        uFiducialId(	0		),
+        uMBZ2(			0		),
+        uDamage(        0		),
+        uLogicalId( setu32LE(uBldLogicalId) ),
+        uPhysicalId(    0		),
+        uDataType(      0		),
+		uExtentSize(	0		),
+        uDamage2(        0		),
+        uLogicalId2( setu32LE(uBldLogicalId) ),
+        uPhysicalId2(	0		),
+        uDataType2(		0		),
+		uExtentSize2(	0		)
+{
+}
+
+int BldPacketHeader::Setup(
+    unsigned int    sData,
+    uint32_t        uSecs1,
+    uint32_t        uNSecs1,
+    uint32_t        uFiducial, 
+    uint32_t        uPhysId,
+    uint32_t        uXtcType  )
+{
+	uNanoSecs	=	setu32LE( uNSecs1	);
+	uSecs		=	setu32LE( uSecs1	);
+	uFiducialId	=	setu32LE( uFiducial	);
+	uPhysicalId	=	setu32LE( uPhysId	);
+	uDataType	=	setu32LE( uXtcType	);
+ 
+	// Compute the extent size
+	uint32_t uExtentSizeTmp = sizeof(BldPacketHeader) - 10 * sizeof(uint32_t);
+	uExtentSizeTmp += sData;
+	uExtentSize  = setu32LE(uExtentSizeTmp);
+ 
+	// Mirror Xtc Section 1 to Section 2
+	uDamage2		= uDamage;
+	uLogicalId2		= uLogicalId;
+	uPhysicalId2	= uPhysicalId;
+	uDataType2		= uDataType;
+	uExtentSize2	= uExtentSize;
+
+	return 0;
+}
+ 
+
 void BldPacketHeader::setPacketSize( unsigned int sData )
 {
 	uint32_t uExtentSizeTmp = sizeof(BldPacketHeader) - 10 * sizeof(uint32_t);

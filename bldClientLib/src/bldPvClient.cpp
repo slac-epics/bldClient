@@ -67,11 +67,9 @@ int BldConfigSend(
 	int				bldClientId,
 	const char	*	sAddr,
 	unsigned short	uPort,
-	unsigned int	srcId,
-	unsigned int	xtcType,
 	unsigned int	uMaxDataSize	)
 {
-    return EpicsBld::BldPvClientFactory::getSingletonBldPvClient(bldClientId).bldConfigSend(	sAddr, uPort, srcId, xtcType, uMaxDataSize );
+    return EpicsBld::BldPvClientFactory::getSingletonBldPvClient(bldClientId).bldConfigSend(	sAddr, uPort, uMaxDataSize );
 }
 
 int BldConfig(int bldClientId, const char* sAddr, unsigned short uPort, 
@@ -153,7 +151,6 @@ public:
     virtual int bldStop();
     virtual bool IsStarted() const;
     virtual int bldConfigSend(	const char	*	sAddr,	unsigned short	uPort,
-								unsigned int	srcId,	unsigned int	xtcType,
 								unsigned int	uMaxDataSize );
     virtual int bldConfig( const char* sAddr, unsigned short uPort,
       unsigned int uMaxDataSize, const char* sInterfaceIp, 
@@ -266,7 +263,7 @@ const char BldPvClientBasic::sPvListSeparators[] = " ,;\r\n";
 BldPvClientBasic& BldPvClientBasic::getSingletonObject(int bldClientId)
 {
     static BldPvClientBasic bldDataClient[10]; // Ick!
-	assert( bldClientId < 10 );
+	assert( bldClientId < 10 && "Make sure your first arg to Bld* shell commands is 0 or bldClientId" );
     return bldDataClient[bldClientId];
 }
 
@@ -303,16 +300,16 @@ int BldPvClientBasic::bldStart()
     if ( _bBldStarted )
         return 1; // return status, without error report
 
-    printf( "Starting bld:\n" );
-        
+    printf( "Starting bld: MaxDataSize %u\n", _uMaxDataSize );
+
 	try
 	{
 		const unsigned char ucTTL = 32; /// minimum: 1 + (# of routers in the middle)
 				
 		_apBldNetworkClient.reset(
-		  EpicsBld::BldNetworkClientFactory::createBldNetworkClient(_uBldServerAddr, _uBldServerPort, 
-		  _uMaxDataSize, ucTTL, _sBldInterfaceIp.c_str() )
-		  );
+		  EpicsBld::BldNetworkClientFactory::createBldNetworkClient( _uBldServerAddr, _uBldServerPort, 
+		  _uMaxDataSize + sizeof(BldPacketHeader), ucTTL, _sBldInterfaceIp.c_str() ) );
+
 		if ( _apBldNetworkClient.get() == NULL )
 			throw string("BldNetworkClient Init fail\n");
 
@@ -366,7 +363,7 @@ int BldPvClientBasic::bldStart()
 				throw string("writePv(") + sBldPvPreTriggerFieldFLNK + ") Failed\n";            
 		}
 			
-		
+
 		/*
 		* setup forward link:  _sBldPvPostTrigger -> _sBldPvPostSubRec -> _sBldPvPostTriggerPostvFLNK
 		*/
@@ -411,7 +408,7 @@ int BldPvClientBasic::bldStart()
 				 != 0 )
 				throw string("writePv(") + sBldPvPostTriggerFieldFLNK + ") Failed\n";            
 		}    
-		
+
 	}   
 	catch (string& sError)
 	{
@@ -571,7 +568,8 @@ int BldPvClientBasic::bldPrepareData()
 	}
 	catch (string& sError)
 	{
-		printf( "BldPvClientBasic::bldPrepareData() : %s\n", sError.c_str() );
+		if ( _iDebugLevel >= 2 )
+			printf( "BldPvClientBasic::bldPrepareData() : %s\n", sError.c_str() );
 		  
 		iRetErrorCode = 2;
 	}
@@ -724,20 +722,17 @@ int BldPvClientBasic::bldSendPacket(
 		if ( uFiducialId >= FIDUCIAL_INVALID )
 			throw string( "Invalid Fiducial 0x1FFFF\n" );
 		if (_uFiducialIdPrev == uFiducialId)
-			throw string("Duplicate Fiducial in BLD!\n");
+			throw string("Duplicate Fiducial in bldPacket!\n");
         _uFiducialIdPrev = uFiducialId;
 
 		if ( sPacket > _uMaxDataSize )
 		    throw string("Packet Size is larger than max value\n");
 
 		// Create a BldPacketHeader in our network msg buffer
-		const unsigned int		uDamage = 0;
 		BldPacketHeader		*	pBldPacketHeader = (BldPacketHeader*) lcMsgBuffer;
-		new ( pBldPacketHeader ) BldPacketHeader(	sizeof(lcMsgBuffer),
-													ts.tv_sec, ts.tv_nsec,
-													uFiducialId,
-													uDamage,
-													srcPhysicalId, xtcDataType );
+		new ( pBldPacketHeader ) BldPacketHeader( );
+		pBldPacketHeader->Setup(	sPacket, ts.tv_sec, ts.tv_nsec,
+									uFiducialId, srcPhysicalId, xtcDataType	);
 
 		// Get ptr and size for data buffer
 		// The lcMsgBuffer starts w/ a BldPacketHeader object,
@@ -751,7 +746,6 @@ int BldPvClientBasic::bldSendPacket(
 		// Load the packet into the header
 		memcpy( pHeaderData, pPacket, sPacket );
 		assert( ((char *)pHeaderData - lcMsgBuffer) == sizeof(BldPacketHeader) );
-		pBldPacketHeader->setPacketSize( sPacket );
 
 		/* Send out bld */
 		int iFailSend = _apBldNetworkClient->sendRawData( sizeof(BldPacketHeader) + sPacket, lcMsgBuffer);
@@ -782,9 +776,7 @@ bool BldPvClientBasic::IsStarted() const
 int BldPvClientBasic::bldConfigSend(
 	const char		*	sAddr,
 	unsigned short		uPort, 
-	unsigned int		srcId,
-	unsigned int		xtcType,
-	unsigned int		uMaxDataSize  )
+	unsigned int		uMaxDataSize	)
 {
     BldPacketHeader::Initialize();
 
@@ -806,13 +798,10 @@ int BldPvClientBasic::bldConfigSend(
     _uBldServerAddr = ntohl( inet_addr( sAddr ) );
     _uBldServerPort = uPort;
     _uMaxDataSize = uMaxDataSize;
-    _uSrcPhysicalId = srcId;
-    _uxtcDataType = xtcType;
     _sBldInterfaceIp.assign( "" );
-	BldRegister( srcId, xtcType & 0xFFFF, uMaxDataSize, 0 );
 
     bldShowConfig();
-    
+ 
     return 0;
 }
 
@@ -858,23 +847,24 @@ void BldPvClientBasic::bldShowConfig()
 {
     unsigned int uServerNetworkAddr = htonl(_uBldServerAddr);
     unsigned char* pcAddr = (unsigned char*) &uServerNetworkAddr;
-    printf( "  Configurable parameters:\n"
-      "    Server Addr %u.%u.%u.%u  Port %d  MaxDataSize %u\n"
-	  "    MulticastIF %s\n"
-	  "    Source Id %d Data Version %d Data Type %d (0x%X)\n",
-      pcAddr[0], pcAddr[1], pcAddr[2], pcAddr[3],
-      _uBldServerPort, _uMaxDataSize,
-	  GetInterfaceIp(), _uSrcPhysicalId,
-	  (_uxtcDataType>>16), (_uxtcDataType&0xFFFF), _uxtcDataType );
+    printf(	"  Configurable parameters:\n"
+			"    Server Addr %u.%u.%u.%u  Port %d  MaxDataSize %u\n"
+			"    MulticastIF %s\n",
+			pcAddr[0], pcAddr[1], pcAddr[2], pcAddr[3],
+			_uBldServerPort, _uMaxDataSize, GetInterfaceIp()	);
+    if ( _uSrcPhysicalId || _uxtcDataType )
+		printf(	"    Source Id %d Data Version %d Data Type %d (0x%X)\n",
+				_uSrcPhysicalId, (_uxtcDataType>>16), (_uxtcDataType&0xFFFF), _uxtcDataType );
 
-	if ( _sBldPvPostTrigger.size() == 0 && _sBldPvList.size() == 0 )
+	if ( _sBldPvPreTrigger.size() == 0 && _sBldPvList.size() == 0 )
 	{
+		// Simple BldConfigSend
 		printf( "BLD Configured w/o PV dependencies.\n"
 				"Use BldSendPacket() from driver code to send packets\n" );
 	}
 	else
 	{
-		// Simple BldConfigSend doesn't need the following config values
+		// Full BldConfig w/ PreTrigger, PostTrigger, and PV list
 		printf(
 		  "    PvPreTrigger <%s>\n"
 		  "    PvPostTrigger <%s>\n"
@@ -885,11 +875,9 @@ void BldPvClientBasic::bldShowConfig()
 
 		printf( "  Internal Settings:\n"
 		  "    Pre  Subroutine Record <%s>  PvPreTrigger.FLNK <%s>\n"
-		  "    Post Subroutine Record <%s>  PvPostTrigger.FLNK <%s>\n"
-		  "    DebugLevel %d\n",
+		  "    Post Subroutine Record <%s>  PvPostTrigger.FLNK <%s>\n",
 		  _sBldPvPreSubRec.c_str(), _sBldPvPreTriggerPrevFLNK.c_str(),
-		  _sBldPvPostSubRec.c_str(), _sBldPvPostTriggerPrevFLNK.c_str(),
-		  _iDebugLevel );      
+		  _sBldPvPostSubRec.c_str(), _sBldPvPostTriggerPrevFLNK.c_str() );      
 		if ( _sBldPvPreTrigger.size() != 0 && _sBldPvPreTrigger == _sBldPvPreSubRec )
 		{
 			printf( "WARNING: PvPreTrigger is same PV as %s!\n", _sBldPvPreSubRec.c_str() );
@@ -903,6 +891,7 @@ void BldPvClientBasic::bldShowConfig()
 					"that you want to process after the BLD data has been sent.\n" );
 		}
 	}
+	printf( "    DebugLevel %d\n", _iDebugLevel );      
 }
 
 /*

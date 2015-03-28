@@ -134,7 +134,7 @@ int testBldAPI_C(char* sInterfaceIp)
 void linkFunctions()
 {
     BldStart(0);
-    BldSendData(0);        
+    BldPrepareData(0);        
     
     extern int bldClient_registerRecordDeviceDriver(DBBASE *pbase);
     bldClient_registerRecordDeviceDriver(NULL);

@@ -66,14 +66,11 @@ static const iocshArg     BldConfigSendArgs[] =
 {
     {"sAddr", iocshArgString},
     {"uPort", iocshArgInt},
-    {"uSrcPhysicalId", iocshArgInt},
-    {"iXtcDataType", iocshArgInt},
     {"uMaxDataSize", iocshArgInt},
 };
 static const iocshArg*    BldConfigSendArgPtrs[] = 
 { 
 	BldConfigSendArgs,		BldConfigSendArgs+1,	BldConfigSendArgs+2,
-	BldConfigSendArgs+3,	BldConfigSendArgs+4
 };
 
 static const iocshFuncDef iocShBldSetIDFuncDef = {"BldSetID", 1, BldSetIDArgPtrs};
@@ -81,7 +78,7 @@ static const iocshFuncDef iocShBldStartFuncDef = {"BldStart", 0, NULL};
 static const iocshFuncDef iocShBldStopFuncDef = {"BldStop", 0, NULL};
 static const iocshFuncDef iocShBldIsStartedFuncDef = {"BldIsStarted", 0, NULL};
 static const iocshFuncDef iocShBldConfigFuncDef = {"BldConfig", 10, BldConfigArgPtrs};
-static const iocshFuncDef iocShBldConfigSendFuncDef = {"BldConfigSend", 5, BldConfigSendArgPtrs};
+static const iocshFuncDef iocShBldConfigSendFuncDef = {"BldConfigSend", 3, BldConfigSendArgPtrs};
 static const iocshFuncDef iocShBldShowConfigFuncDef = {"BldShowConfig", 0, NULL};
 static const iocshFuncDef iocShBldSetPreSubFuncDef = {"BldSetPreSub", 1, BldSetPreSubArgPtrs};
 static const iocshFuncDef iocShBldSetPostSubFuncDef = {"BldSetPostSub", 1, BldSetPostSubArgPtrs};
@@ -123,8 +120,7 @@ static void iocShBldConfigCallFunc(const iocshArgBuf *args)
 
 static void iocShBldConfigSendCallFunc(const iocshArgBuf *args) 
 {
-    BldConfigSend( bldidx,	args[0].sval, args[1].ival, args[2].ival,
-							args[3].ival, args[4].ival	);
+    BldConfigSend( bldidx,	args[0].sval, args[1].ival, args[2].ival );
 }
 
 static void iocShBldShowConfigCallFunc(const iocshArgBuf *args) 

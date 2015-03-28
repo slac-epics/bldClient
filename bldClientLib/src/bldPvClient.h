@@ -21,9 +21,7 @@ public:
     virtual bool IsStarted() const  = 0;
     virtual int bldConfigSend(	const char		*	sAddr,
 								unsigned short		uPort, 
-								unsigned int		srcId,
-								unsigned int		xtcType,
-								unsigned int		uMaxDataSize ) = 0;
+								unsigned int		uMaxDataSize	) = 0;
     virtual int bldConfig( const char* sAddr, unsigned short uPort, 
       unsigned int uMaxDataSize, const char* sInterfaceIp, 
       unsigned int uSrcPyhsicalId, unsigned int uDataType, 
@@ -105,8 +103,6 @@ int BldSetControl(int id, int on);
 int BldConfigSend(	int					bldClientId,
 					const char		*	sAddr,
 					unsigned short		uPort,
-					unsigned int		srcPhysicalId,
-					unsigned int		xtcDataType,
 					unsigned int		uMaxDataSize	);
 int BldConfig( int id, const char* sAddr, unsigned short uPort, unsigned int uMaxDataSize, const char* sInterfaceIp, 
                unsigned int uSrcPhysicalId, unsigned int uXtcDataType, const char* sBldPvPreTrigger,

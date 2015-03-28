@@ -297,8 +297,6 @@ int BldNetworkClientSlim::getDebugLevel()
 int BldNetworkClientSlim::sendRawData(int iSizeData, const char* pData)
 {
     int iRetErrorCode = 0;
-try
-{
     /*
      * sendmsg
      */     
@@ -324,6 +322,8 @@ try
     hdr.msg_iov         = &iov[0];
 
     unsigned int uSendFlags = 0;
+try
+{
     if ( 
       sendmsg(_iSocket, &hdr, uSendFlags) 
       == -1 )
@@ -331,12 +331,13 @@ try
 }
 catch (string& sError)
 {
-    printf( "[Error] %s, errno = %d (%s)\n", sError.c_str(), errno,
+    printf( "[Error] %s, size = %u, errno = %d (%s)\n", sError.c_str(), iSizeData, errno,
       strerror(errno) );
+    printf( "[Error] %s, hdr.msg_iovlen = %zu, hdr.msg_iov->iov_len = %zu \n", sError.c_str(), hdr.msg_iovlen, hdr.msg_iov->iov_len );
       
     iRetErrorCode = 1;
 }
-        
+
     return iRetErrorCode;   
 }
 

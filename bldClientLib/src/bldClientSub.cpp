@@ -42,8 +42,11 @@ static long bldPreSubProcess(subRecord *pSubrecord)
         printf("bldPreSubProcess() : Record %s called bldPreSubProcess(%p)\n",
           pSubrecord->name, (void*) pSubrecord); 
     
-    BldPrepareData( static_cast<int>(pSubrecord->a) );
-
+	int	status = BldPrepareData( static_cast<int>(pSubrecord->a) );
+    if (bldPreSubDebug)
+        printf(	"bldPreSubProcess %s: BLD Error %d\n",
+        		pSubrecord->name, status ); 
+	// Return 0 so subrecord knows we're done
     return(0);
 }
 
