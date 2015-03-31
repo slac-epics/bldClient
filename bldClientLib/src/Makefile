@@ -17,6 +17,7 @@ include $(TOP)/configure/CONFIG
 LIBRARY_IOC	+= bldClient
 INC			+= bldNetworkClient.h
 INC			+= bldPvClient.h
+INC			+= bldPacket.h
 
 DBD			+= bldClient.dbd
 

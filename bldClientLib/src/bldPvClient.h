@@ -37,6 +37,10 @@ public:
     virtual int bldPrepareData() = 0;       
     virtual int bldSendData() = 0; 
  
+ 	// Note: BLD packets are sent in little-endian byte order
+ 	// For RTEMS-powerpc or other big-endian platforms, use setu32LE
+	// and other little-endian conversion functions in blkdPacket.h
+	// to prepare your packets.
     virtual int bldSendPacket(
 			unsigned int		srcPhysicalId,
 			unsigned int		xtcDataType,
