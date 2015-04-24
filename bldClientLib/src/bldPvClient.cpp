@@ -191,7 +191,7 @@ private:
     std::auto_ptr<EpicsBld::BldNetworkClientInterface> _apBldNetworkClient;
     int _iDebugLevel;
     
-    string          _sBldPvPreSubRec, _sBldPvPostSubRec,;
+    string          _sBldPvPreSubRec, _sBldPvPostSubRec;
     unsigned int    _uBldServerAddr;
     unsigned short  _uBldServerPort;
     unsigned int    _uMaxDataSize;
