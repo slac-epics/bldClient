@@ -107,7 +107,8 @@ int BldSetControl(int id, int on);
 int BldConfigSend(	int					bldClientId,
 					const char		*	sAddr,
 					unsigned short		uPort,
-					unsigned int		uMaxDataSize	);
+					unsigned int		uMaxDataSize,
+					const char		*	sInterfaceIp	);
 int BldConfig( int id, const char* sAddr, unsigned short uPort, unsigned int uMaxDataSize, const char* sInterfaceIp, 
                unsigned int uSrcPhysicalId, unsigned int uXtcDataType, const char* sBldPvPreTrigger,
                const char* sBldPvPostTrigger, const char* sBldPvFiducial, const char* sBldPvList );

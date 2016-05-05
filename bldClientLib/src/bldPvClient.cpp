@@ -67,9 +67,10 @@ int BldConfigSend(
 	int				bldClientId,
 	const char	*	sAddr,
 	unsigned short	uPort,
-	unsigned int	uMaxDataSize	)
+	unsigned int	uMaxDataSize,
+	const char	*	sInterfaceIp	)
 {
-    return EpicsBld::BldPvClientFactory::getSingletonBldPvClient(bldClientId).bldConfigSend(	sAddr, uPort, uMaxDataSize );
+    return EpicsBld::BldPvClientFactory::getSingletonBldPvClient(bldClientId).bldConfigSend(	sAddr, uPort, uMaxDataSize, sInterfaceIp );
 }
 
 int BldConfig(int bldClientId, const char* sAddr, unsigned short uPort, 
@@ -776,7 +777,8 @@ bool BldPvClientBasic::IsStarted() const
 int BldPvClientBasic::bldConfigSend(
 	const char		*	sAddr,
 	unsigned short		uPort, 
-	unsigned int		uMaxDataSize	)
+	unsigned int		uMaxDataSize,
+	const char		*	sInterfaceIp	)
 {
     BldPacketHeader::Initialize();
 
@@ -787,6 +789,7 @@ int BldPvClientBasic::bldConfigSend(
     }
             
     // Check for valid parameters
+    // Note: sInterfaceIp == NULL is okay, which means default NIC is used
     if ( sAddr == NULL || uMaxDataSize <= 0 ) 
     {
         printf( "BldPvClientBasic::bldConfigSend() : Input parameter invalid\n" );
@@ -798,7 +801,7 @@ int BldPvClientBasic::bldConfigSend(
     _uBldServerAddr = ntohl( inet_addr( sAddr ) );
     _uBldServerPort = uPort;
     _uMaxDataSize = uMaxDataSize;
-    _sBldInterfaceIp.assign( "" );
+    _sBldInterfaceIp.assign(sInterfaceIp == NULL? "" : sInterfaceIp);  
 
     bldShowConfig();
  

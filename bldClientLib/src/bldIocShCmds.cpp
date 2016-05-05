@@ -67,10 +67,11 @@ static const iocshArg     BldConfigSendArgs[] =
     {"sAddr", iocshArgString},
     {"uPort", iocshArgInt},
     {"uMaxDataSize", iocshArgInt},
+    {"sInterfaceIp", iocshArgString},
 };
 static const iocshArg*    BldConfigSendArgPtrs[] = 
 { 
-	BldConfigSendArgs,		BldConfigSendArgs+1,	BldConfigSendArgs+2,
+	BldConfigSendArgs,		BldConfigSendArgs+1,	BldConfigSendArgs+2, BldConfigSendArgs+3
 };
 
 static const iocshFuncDef iocShBldSetIDFuncDef = {"BldSetID", 1, BldSetIDArgPtrs};
@@ -120,7 +121,7 @@ static void iocShBldConfigCallFunc(const iocshArgBuf *args)
 
 static void iocShBldConfigSendCallFunc(const iocshArgBuf *args) 
 {
-    BldConfigSend( bldidx,	args[0].sval, args[1].ival, args[2].ival );
+    BldConfigSend( bldidx,	args[0].sval, args[1].ival, args[2].ival, args[3].sval );
 }
 
 static void iocShBldShowConfigCallFunc(const iocshArgBuf *args) 
