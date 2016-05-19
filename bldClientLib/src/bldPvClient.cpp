@@ -152,7 +152,7 @@ public:
     virtual int bldStop();
     virtual bool IsStarted() const;
     virtual int bldConfigSend(	const char	*	sAddr,	unsigned short	uPort,
-								unsigned int	uMaxDataSize );
+								unsigned int	uMaxDataSize, const char* sInterfaceIp );
     virtual int bldConfig( const char* sAddr, unsigned short uPort,
       unsigned int uMaxDataSize, const char* sInterfaceIp, 
       unsigned int uSrcPhysicalId, unsigned int uxtcDataType, 

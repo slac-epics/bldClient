@@ -21,7 +21,8 @@ public:
     virtual bool IsStarted() const  = 0;
     virtual int bldConfigSend(	const char		*	sAddr,
 								unsigned short		uPort, 
-								unsigned int		uMaxDataSize	) = 0;
+								unsigned int		uMaxDataSize,
+								const char		*	sInterfaceIp ) = 0;
     virtual int bldConfig( const char* sAddr, unsigned short uPort, 
       unsigned int uMaxDataSize, const char* sInterfaceIp, 
       unsigned int uSrcPyhsicalId, unsigned int uDataType, 
