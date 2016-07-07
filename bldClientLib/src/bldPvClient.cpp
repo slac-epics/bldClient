@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 #include <string.h>
+#include <time.h>
 
 #include <dbDefs.h>
 #include <registryFunction.h>
@@ -634,6 +635,14 @@ int BldPvClientBasic::bldSendData()
 			printf( "bldSendData: Cur Fiducial Id 0x%05X, Prev Fiducial Id 0x%05X\n", uFiducialId, _uFiducialIdPrev ); 
 
         if (_uFiducialIdPrev == uFiducialId) {
+                        time_t t;
+                        struct tm *tmp;
+                        t = time(NULL);
+                        tmp = localtime(&t);
+                        printf("[%02d/%02d/%04d %02d:%02d:%02d] Fiducial: %d (0x%x)\n",
+                               tmp->tm_mon, tmp->tm_mday, 1900 + tmp->tm_year,
+                               tmp->tm_hour, tmp->tm_min, tmp->tm_sec,
+                               uFiducialId, uFiducialId);
 			throw string("Duplicate Fiducial in BLD!\n");
 			return 2;
         }
