@@ -1,30 +1,21 @@
-# RELEASE
-# Defines location of external products
-include $(TOP)/RELEASE_SITE
+#RELEASE Location of external products
+# Run "gnumake clean uninstall install" in the application
+# top directory each time this file is changed.
 
-# ===============================================================
-# Define the location and version of EPICS base
-# ===============================================================
-BASE_MODULE_VERSION=R3.14.12-0.4.0
-EPICS_BASE=$(EPICS_SITE_TOP)/base/$(BASE_MODULE_VERSION)
+TEMPLATE_TOP=$(EPICS_BASE)/templates/makeBaseApp/top
 
-# ===============================================================
-# Define the version(s) of any other needed modules 
-# ===============================================================
-# Example: IPAC_MODULE_VERSION=R2.8.4-0.2.0
+#SUPPORT=/corvette/home/epics/devel
+-include $(TOP)/../configure/SUPPORT.$(EPICS_HOST_ARCH)
+-include $(TOP)/configure/RELEASE.local
 
-# ============================================================
-# External Support module path definitions
-#
-# If any of these macros expand to a path which
-# contains an "include" directory, that directory will be
-# included in the compiler include path.
-#
-# If any of these macros expand to a path which
-# contains a "lib/<arch>" directory, that directory will be
-# included in the compiler link path for that architecture.
-#
-# If your build fails, look for these paths in your build output
-# ============================================================
-# Example: IPAC=$(EPICS_MODULES)/ipac/$(IPAC_MODULE_VERSION)
+# ASYN is needed to compile asyn device support
+#ASYN=$(SUPPORT)/asyn-4-17
+
+# EPICS_BASE usually appears last so other apps can override stuff:
+#EPICS_BASE=/corvette/usr/local/epics/base-3.14.12.1
+-include $(TOP)/../configure/EPICS_BASE.$(EPICS_HOST_ARCH)
+
+#Capfast users may need the following definitions
+#CAPFAST_TEMPLATES=
+#SCH2EDIF_PATH=
 
