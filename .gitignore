@@ -1,7 +1,10 @@
 RELEASE_SITE
-O.*
+archive
+autosave
+bin
 db
 dbd
 include
 lib
-bin
+O.*
+*.log
