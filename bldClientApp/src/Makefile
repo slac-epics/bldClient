@@ -8,29 +8,23 @@ include $(TOP)/configure/CONFIG
 #=============================
 # build an ioc application
 
-PROD_IOC += bldClient
+PROD_IOC_Linux += BldTestApp
 
-#DBD += bldClientApp.dbd
+#DBD += BldTestApp.dbd
 
-# bldClient.dbd will be made up from these files:
-#bldClientApp_DBD += base.dbd
+# BldTestApp.dbd will be made up from these files:
+#BldTestApp_DBD += base.dbd
 #include definitions for any other support applications needed
 
 # <name>_registerRecordDeviceDriver.cpp will be created from <name>.dbd
-#bldClient_SRCS += bldClient_registerRecordDeviceDriver.cpp
-#bldClient_SRCS += bldClientSub.cpp
-bldClient_SRCS += bldNetworkClientTest.cpp
-bldClient_SRCS_Linux += bldClientMain.cpp
-bldClient_SRCS_vxWorks += -nil-
-
-#The following adds support from base/src/vxWorks
-bldClient_OBJS_vxWorks += $(EPICS_BASE_BIN)/vxComLibrary
+#BldTestApp_SRCS += BldTestApp_registerRecordDeviceDriver.cpp
+BldTestApp_SRCS += BldTestAppMain.cpp
+BldTestApp_SRCS += bldNetworkClientTest.cpp
 
 #add a definition for each support application used by this application
-#bldClient_LIBS_RTEMS += foo
-bldClient_LIBS += bldClient
-bldClient_LIBS_Linux += $(EPICS_BASE_IOC_LIBS)
-
+#BldTestApp_LIBS_RTEMS += foo
+BldTestApp_LIBS += bldClient
+BldTestApp_LIBS += $(EPICS_BASE_IOC_LIBS)
 
 #===========================
 
