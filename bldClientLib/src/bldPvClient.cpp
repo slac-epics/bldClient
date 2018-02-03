@@ -226,8 +226,7 @@ private:
     /* PV access and report */    
     static int readPv(const char *sVariableName, int iBufferSize, void* pBuffer, 
       short* piValueType, long* plNumElements, epicsTimeStamp *ts );
-    static int writePv(const char *sVariableName, const void* pBuffer, 
-      short iValueType = DBR_STRING, long lNumElements = 1);
+    static int writePv(const char * sVariableName, const char * pBuffer ); 
     static int printPv(const char *sVariableName, void* pBuffer, 
       short iValueType = DBR_STRING, long lNumElements = 1 );
     static int sprintPv(const char *sVariableName, void* pBuffer, 
@@ -324,18 +323,17 @@ int BldPvClientBasic::bldStart()
 		{
 			short int iFieldType = 0;
 			long lNumElements = 0;
-			char* lcBufPvVal = (char*) llBufPvVal;
 			llBufPvVal[0] = 0;
 
 			// Read PV: (_sBldPvPreTrigger).FLNK
 			// If it has ".XXX" at the end, no need to append ".FLNK"!
-			string sBldPvPreTriggerFieldFLNK = 
+			string tsBldPvPreTriggerFLNK = 
 				(_sBldPvPreTrigger.find('.') == string::npos) ? _sBldPvPreTrigger + ".FLNK"
 															  : _sBldPvPreTrigger;
-			if ( 
-			  readPv( sBldPvPreTriggerFieldFLNK.c_str(), sizeof(llBufPvVal), llBufPvVal, &iFieldType, &lNumElements, NULL )
-			  != 0 )
-				throw string("readPv(") + sBldPvPreTriggerFieldFLNK + ") Failed\n";
+			if ( readPv( tsBldPvPreTriggerFLNK.c_str(), sizeof(llBufPvVal), llBufPvVal,
+						&iFieldType, &lNumElements, NULL ) != 0 )
+				throw string("readPv(") + tsBldPvPreTriggerFLNK + ") Failed\n";
+			char* lcBufPvVal = (char*) llBufPvVal;
 			_sBldPvPreTriggerPrevFLNK.assign(lcBufPvVal);
 			
 			// Set PV: (_sBldPvPreSubRec).FLNK = (_sBldPvPreTrigger).FLNK
@@ -343,26 +341,24 @@ int BldPvClientBasic::bldStart()
 				_sBldPvPreTriggerPrevFLNK.clear();
 			else if ( !_sBldPvPreTriggerPrevFLNK.empty() )
 			{
-				string sBldPvSubRecFieldFLNK = _sBldPvPreSubRec + ".FLNK";
+				string tsBldPreSubFLNK = _sBldPvPreSubRec + ".FLNK";
 				if ( _iDebugLevel >= 1 )
-					printf( "Setting PV FLNK: %s = %s\n", sBldPvSubRecFieldFLNK.c_str(), 
-					  _sBldPvPreTriggerPrevFLNK.c_str() );
-				if ( 
-				  writePv( sBldPvSubRecFieldFLNK.c_str(), lcBufPvVal )
-				  != 0 )
-					throw string("writePv(") + sBldPvSubRecFieldFLNK + ") Failed\n";    
+					printf( "Setting BldPreSub.FLNK:  %s = %s\n",
+								 tsBldPreSubFLNK.c_str(), 
+								_sBldPvPreTriggerPrevFLNK.c_str() );
+				if ( writePv(	 tsBldPreSubFLNK.c_str(),
+								_sBldPvPreTriggerPrevFLNK.c_str() ) != 0 )
+					throw string("writePv(") + tsBldPreSubFLNK + ") Failed\n";    
 			}
 
 			// Set PV: (_sBldPvPreTrigger).FLNK = _sBldPvPreSubRec
-			int iLenPvVal = _sBldPvPreSubRec.length();
-			strncpy( lcBufPvVal, _sBldPvPreSubRec.c_str(), iLenPvVal );
 			if ( _iDebugLevel >= 1 )
-				printf( "Setting PV FLNK: %s = %s\n", sBldPvPreTriggerFieldFLNK.c_str(), 
-				  _sBldPvPreSubRec.c_str() );
-			if ( 
-			  writePv( sBldPvPreTriggerFieldFLNK.c_str(), lcBufPvVal )
-			  != 0 )
-				throw string("writePv(") + sBldPvPreTriggerFieldFLNK + ") Failed\n";            
+				printf(		"Setting PreTrigger.FLNK: %s = %s\n",
+							 tsBldPvPreTriggerFLNK.c_str(), 
+				  			_sBldPvPreSubRec.c_str() );
+			if ( writePv(	 tsBldPvPreTriggerFLNK.c_str(), 
+				  			_sBldPvPreSubRec.c_str() ) != 0 )
+				throw string("writePv(") + tsBldPvPreTriggerFLNK + ") Failed\n";            
 		}
 			
 
@@ -373,42 +369,38 @@ int BldPvClientBasic::bldStart()
 		{
 			short int iFieldType = 0;
 			long lNumElements = 0;
-			char* lcBufPvVal = (char*) llBufPvVal;
 			llBufPvVal[0] = 0;
 
 			// Read PV: (_sBldPvPostTrigger).FLNK
-			string sBldPvPostTriggerFieldFLNK = _sBldPvPostTrigger + ".FLNK";
-			if ( 
-				 readPv( sBldPvPostTriggerFieldFLNK.c_str(), sizeof(llBufPvVal), llBufPvVal, &iFieldType, &lNumElements, NULL )
-				 != 0 )
-				throw string("readPv(") + sBldPvPostTriggerFieldFLNK + ") Failed\n";
+			string tsPvPostTriggerFLNK = _sBldPvPostTrigger + ".FLNK";
+			if ( readPv( tsPvPostTriggerFLNK.c_str(), sizeof(llBufPvVal), llBufPvVal, &iFieldType, &lNumElements, NULL ) != 0 )
+				throw string("readPv(") + tsPvPostTriggerFLNK + ") Failed\n";
+			char* lcBufPvVal = (char*) llBufPvVal;
 			_sBldPvPostTriggerPrevFLNK.assign(lcBufPvVal);
-			
+
 			// Set PV: (_sBldPvPostSubRec).FLNK = (_sBldPvPostTrigger).FLNK
 			if ( _sBldPvPostTriggerPrevFLNK == "0" ) // special case: "0" means NO FLNK
 				_sBldPvPostTriggerPrevFLNK.clear();
 			else if ( !_sBldPvPostTriggerPrevFLNK.empty() )
 			{
-				string sBldPvSubRecFieldFLNK = _sBldPvPostSubRec + ".FLNK";
+				string tsBldPostSubFLNK = _sBldPvPostSubRec + ".FLNK";
 				if ( _iDebugLevel >= 1 )
-					printf( "Setting PV FLNK: %s = %s\n", sBldPvSubRecFieldFLNK.c_str(), 
+					printf( "Setting PostTriggerFLNK: %s = %s\n",
+							 tsBldPostSubFLNK.c_str(), 
 							_sBldPvPostTriggerPrevFLNK.c_str() );
-				if ( 
-					 writePv( sBldPvSubRecFieldFLNK.c_str(), lcBufPvVal )
-					 != 0 )
-					throw string("writePv(") + sBldPvSubRecFieldFLNK + ") Failed\n";    
+				if ( writePv(	 tsBldPostSubFLNK.c_str(), 
+								_sBldPvPostTriggerPrevFLNK.c_str() ) != 0 )
+					throw string("writePv(") + tsBldPostSubFLNK + ") Failed\n";    
 			}
 
 			// Set PV: (_sBldPvPostTrigger).FLNK = _sBldPvPostSubRec
-			int iLenPvVal = _sBldPvPostSubRec.length();
-			strncpy( lcBufPvVal, _sBldPvPostSubRec.c_str(), iLenPvVal );
 			if ( _iDebugLevel >= 1 )
-				printf( "Setting PV FLNK: %s = %s\n", sBldPvPostTriggerFieldFLNK.c_str(), 
-						_sBldPvPostSubRec.c_str() );
-			if ( 
-				 writePv( sBldPvPostTriggerFieldFLNK.c_str(), lcBufPvVal )
-				 != 0 )
-				throw string("writePv(") + sBldPvPostTriggerFieldFLNK + ") Failed\n";            
+				printf( 	"Setting PostTriggerFLNK: %s = %s\n",
+							 tsPvPostTriggerFLNK.c_str(), 
+							_sBldPvPostSubRec.c_str() );
+			if ( writePv(	 tsPvPostTriggerFLNK.c_str(), 
+							_sBldPvPostSubRec.c_str() ) != 0 )
+				throw string("writePv(") + tsPvPostTriggerFLNK + ") Failed\n";            
 		}    
 
 	}   
@@ -439,34 +431,30 @@ int BldPvClientBasic::bldStop()
 		 */
 		if ( !_sBldPvPreTrigger.empty() )
 		{
-			char* lcBufPvVal = (char*) llBufPvVal;
 			llBufPvVal[0] = 0;
 			
 			// Set PV: (_sBldPvPreTrigger).FLNK = ""
-			int iLenPvVal = _sBldPvPreTriggerPrevFLNK.length();
-			strncpy( lcBufPvVal, _sBldPvPreTriggerPrevFLNK.c_str(), iLenPvVal );
 			// If it has ".XXX" at the end, no need to append ".FLNK"!
-			string sBldPvPreTriggerFieldFLNK = 
+			string tsBldPvPreTriggerFLNK = 
 				(_sBldPvPreTrigger.find('.') == string::npos) ? _sBldPvPreTrigger + ".FLNK"
 															  : _sBldPvPreTrigger;
 			if ( _iDebugLevel >= 1 )
-				printf( "Setting PV FLNK: %s = %s\n", sBldPvPreTriggerFieldFLNK.c_str(), 
-				  _sBldPvPreTriggerPrevFLNK.c_str() );
-			if ( 
-			  writePv( sBldPvPreTriggerFieldFLNK.c_str(), lcBufPvVal )
-			  != 0 )
-				throw string("writePv(") + sBldPvPreTriggerFieldFLNK + ") Failed\n";
+				printf( 	"Setting PreTrigger.FLNK: %s = %s\n",
+							tsBldPvPreTriggerFLNK.c_str(), 
+				  			_sBldPvPreTriggerPrevFLNK.c_str() );
+			if ( writePv(	tsBldPvPreTriggerFLNK.c_str(),
+				  			_sBldPvPreTriggerPrevFLNK.c_str() ) != 0 )
+				throw string("writePv(") + tsBldPvPreTriggerFLNK + ") Failed\n";
 				
 			if ( !_sBldPvPreTriggerPrevFLNK.empty() )
 			{
-				lcBufPvVal[0] = 0; // set lcBufPvVal = ""
-				string sBldPvSubRecFieldFLNK = _sBldPvPreSubRec + ".FLNK";
+				string tsBldPreSubFLNK = _sBldPvPreSubRec + ".FLNK";
 				if ( _iDebugLevel >= 1 )
-					printf( "Setting PV FLNK: %s = 0\n", sBldPvSubRecFieldFLNK.c_str() );            
-				if ( 
-				  writePv( sBldPvSubRecFieldFLNK.c_str(), lcBufPvVal )
-				  != 0 )
-					throw string("writePv(") + sBldPvSubRecFieldFLNK + ") Failed\n";                        
+					printf( "Setting BldPreSub.FLNK:  %s = 0\n", tsBldPreSubFLNK.c_str() );            
+				char* lcBufPvVal = (char*) llBufPvVal;
+				lcBufPvVal[0] = 0; // set lcBufPvVal = ""
+				if ( writePv( tsBldPreSubFLNK.c_str(), lcBufPvVal ) != 0 )
+					throw string("writePv(") + tsBldPreSubFLNK + ") Failed\n";                        
 			}
 		}    
 
@@ -477,31 +465,27 @@ int BldPvClientBasic::bldStop()
 		*/
 		if ( !_sBldPvPostTrigger.empty() )
 		{
-			char* lcBufPvVal = (char*) llBufPvVal;
 			llBufPvVal[0] = 0;
 			
 			// Set PV: (_sBldPvPostTrigger).FLNK = ""
-			int iLenPvVal = _sBldPvPostTriggerPrevFLNK.length();
-			strncpy( lcBufPvVal, _sBldPvPostTriggerPrevFLNK.c_str(), iLenPvVal );
-			string sBldPvPostTriggerFieldFLNK = _sBldPvPostTrigger + ".FLNK";
+			string tsPvPostTriggerFLNK = _sBldPvPostTrigger + ".FLNK";
 			if ( _iDebugLevel >= 1 )
-				printf( "Setting PV FLNK: %s = %s\n", sBldPvPostTriggerFieldFLNK.c_str(), 
-						_sBldPvPostTriggerPrevFLNK.c_str() );
-			if ( 
-				 writePv( sBldPvPostTriggerFieldFLNK.c_str(), lcBufPvVal )
-				 != 0 )
-				throw string("writePv(") + sBldPvPostTriggerFieldFLNK + ") Failed\n";
+				printf(		"Setting PostTriggerFLNK: %s = %s\n",
+							tsPvPostTriggerFLNK.c_str(), 
+							_sBldPvPostTriggerPrevFLNK.c_str() );
+			if ( writePv(	tsPvPostTriggerFLNK.c_str(),
+							_sBldPvPostTriggerPrevFLNK.c_str() ) != 0 )
+				throw string("writePv(") + tsPvPostTriggerFLNK + ") Failed\n";
 				
 			if ( !_sBldPvPostTriggerPrevFLNK.empty() )
 			{
-				lcBufPvVal[0] = 0; // set lcBufPvVal = ""
-				string sBldPvSubRecFieldFLNK = _sBldPvPostSubRec + ".FLNK";
+				string tsBldPostSubFLNK = _sBldPvPostSubRec + ".FLNK";
 				if ( _iDebugLevel >= 1 )
-					printf( "Setting PV FLNK: %s = 0\n", sBldPvSubRecFieldFLNK.c_str() );            
-				if ( 
-					 writePv( sBldPvSubRecFieldFLNK.c_str(), lcBufPvVal )
-					 != 0 )
-					throw string("writePv(") + sBldPvSubRecFieldFLNK + ") Failed\n";                        
+					printf( "Setting BldPostSubFLNK:  %s = 0\n", tsBldPostSubFLNK.c_str() );            
+				char* lcBufPvVal = (char*) llBufPvVal;
+				lcBufPvVal[0] = 0; // set lcBufPvVal = ""
+				if ( writePv( tsBldPostSubFLNK.c_str(), lcBufPvVal ) != 0 )
+					throw string("writePv(") + tsBldPostSubFLNK + ") Failed\n";                        
 			}
 		}    
 
@@ -951,6 +935,8 @@ int BldPvClientBasic::readPv(
  
 	// TODO: No need to use dbNameToAddr, as that restricts us to local PV's only
 	// Update to support ca based PV's via dbGetLink and dbGetTimeStamp
+	// NOTE: If we do support CA, we need to be careful about code that uses
+	// readPv() and writePv() to manipulate FLNK or for BLD timing.
     DBADDR  dbaddrVariable;
     int iStatus = dbNameToAddr(sVariableName,&dbaddrVariable);  
     if ( iStatus != 0 )
@@ -987,38 +973,15 @@ int BldPvClientBasic::readPv(
     return(0);
 }
 
-int BldPvClientBasic::writePv(const char *sVariableName, const void* pBuffer, short iValueType, long lNumElements )
+int BldPvClientBasic::writePv(const char *sVariableName, const char * pBuffer )
 {
     if (sVariableName == NULL || *sVariableName == 0 || pBuffer == NULL )
     {
         printf( "writePv(): Invalid parameter\n" );
         return 1;
     }
-    
-    if ( (reinterpret_cast<unsigned long>(pBuffer) & 0x3) != 0  )
-    {
-        printf( "writePv(): Buffer should be aligned in 32 bits boundaries\n" );
-        return 2;
-    }
 
-    DBADDR  dbaddrVariable;
-    int iStatus = dbNameToAddr(sVariableName,&dbaddrVariable);  
-    if ( iStatus != 0 )
-    {
-        printf("writePv(): dbNameToAddr(%s) failed. Status  = %d\n", sVariableName, iStatus);
-        return(iStatus);
-    }
-    
-    if(iValueType==DBR_ENUM) 
-    {
-        unsigned short suValue = (unsigned short) atoi((char*)pBuffer);
-
-        iStatus = 
-          dbPutField( &dbaddrVariable, DBR_ENUM, &suValue, lNumElements);
-    }
-    else
-        iStatus = 
-          dbPutField( &dbaddrVariable, iValueType, pBuffer, lNumElements);
+	int iStatus = dbpf( sVariableName, pBuffer );
           
     if ( iStatus != 0 )
     {
