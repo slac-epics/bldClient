@@ -3,5 +3,8 @@
 #  Name: RELEASE_NOTES
 #
 #==============================================================
+R2.18.0: 2018-02-2 Bruce Hill
+	FLNK corruption bug by eliminating incorrect and unnecessary use of strncpy.
+
 R2.17.0: 2017-04-26 Hugo Slepicka
     Changes needed for the new git workflow.
