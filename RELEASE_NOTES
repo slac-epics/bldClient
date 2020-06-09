@@ -3,6 +3,9 @@
 #  Name: RELEASE_NOTES
 #
 #==============================================================
+R2.19.0: 2020-06-08 Bruce Hill
+	Add checks for empty BldPvPreSubRec and BldPvPostSubRec.
+
 R2.18.0: 2018-02-2 Bruce Hill
 	FLNK corruption bug by eliminating incorrect and unnecessary use of strncpy.
 
