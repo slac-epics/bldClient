@@ -336,29 +336,32 @@ int BldPvClientBasic::bldStart()
 			char* lcBufPvVal = (char*) llBufPvVal;
 			_sBldPvPreTriggerPrevFLNK.assign(lcBufPvVal);
 			
-			// Set PV: (_sBldPvPreSubRec).FLNK = (_sBldPvPreTrigger).FLNK
-			if ( _sBldPvPreTriggerPrevFLNK == "0" ) // special case: "0" means NO FLNK
-				_sBldPvPreTriggerPrevFLNK.clear();
-			else if ( !_sBldPvPreTriggerPrevFLNK.empty() )
+			if ( !_sBldPvPreSubRec.empty() )
 			{
-				string tsBldPreSubFLNK = _sBldPvPreSubRec + ".FLNK";
-				if ( _iDebugLevel >= 1 )
-					printf( "Setting BldPreSub.FLNK:  %s = %s\n",
-								 tsBldPreSubFLNK.c_str(), 
-								_sBldPvPreTriggerPrevFLNK.c_str() );
-				if ( writePv(	 tsBldPreSubFLNK.c_str(),
-								_sBldPvPreTriggerPrevFLNK.c_str() ) != 0 )
-					throw string("writePv(") + tsBldPreSubFLNK + ") Failed\n";    
-			}
+				// Set PV: (_sBldPvPreSubRec).FLNK = (_sBldPvPreTrigger).FLNK
+				if ( _sBldPvPreTriggerPrevFLNK == "0" ) // special case: "0" means NO FLNK
+					_sBldPvPreTriggerPrevFLNK.clear();
+				else if ( !_sBldPvPreTriggerPrevFLNK.empty() )
+				{
+					string tsBldPreSubFLNK = _sBldPvPreSubRec + ".FLNK";
+					if ( _iDebugLevel >= 1 )
+						printf( "Setting BldPreSub.FLNK:  %s = %s\n",
+									tsBldPreSubFLNK.c_str(), 
+									_sBldPvPreTriggerPrevFLNK.c_str() );
+					if ( writePv(	tsBldPreSubFLNK.c_str(),
+									_sBldPvPreTriggerPrevFLNK.c_str() ) != 0 )
+						throw string("writePv(") + tsBldPreSubFLNK + ") Failed\n";    
+				}
 
-			// Set PV: (_sBldPvPreTrigger).FLNK = _sBldPvPreSubRec
-			if ( _iDebugLevel >= 1 )
-				printf(		"Setting PreTrigger.FLNK: %s = %s\n",
-							 tsBldPvPreTriggerFLNK.c_str(), 
-				  			_sBldPvPreSubRec.c_str() );
-			if ( writePv(	 tsBldPvPreTriggerFLNK.c_str(), 
-				  			_sBldPvPreSubRec.c_str() ) != 0 )
-				throw string("writePv(") + tsBldPvPreTriggerFLNK + ") Failed\n";            
+				// Set PV: (_sBldPvPreTrigger).FLNK = _sBldPvPreSubRec
+				if ( _iDebugLevel >= 1 )
+					printf(		"Setting PreTrigger.FLNK: %s = %s\n",
+								 tsBldPvPreTriggerFLNK.c_str(), 
+								_sBldPvPreSubRec.c_str() );
+				if ( writePv(	tsBldPvPreTriggerFLNK.c_str(),
+								_sBldPvPreSubRec.c_str() ) != 0 )
+					throw string("writePv(") + tsBldPvPreTriggerFLNK + ") Failed\n";            
+			}
 		}
 			
 
@@ -378,29 +381,32 @@ int BldPvClientBasic::bldStart()
 			char* lcBufPvVal = (char*) llBufPvVal;
 			_sBldPvPostTriggerPrevFLNK.assign(lcBufPvVal);
 
-			// Set PV: (_sBldPvPostSubRec).FLNK = (_sBldPvPostTrigger).FLNK
-			if ( _sBldPvPostTriggerPrevFLNK == "0" ) // special case: "0" means NO FLNK
-				_sBldPvPostTriggerPrevFLNK.clear();
-			else if ( !_sBldPvPostTriggerPrevFLNK.empty() )
+			if ( !_sBldPvPostSubRec.empty() )
 			{
-				string tsBldPostSubFLNK = _sBldPvPostSubRec + ".FLNK";
-				if ( _iDebugLevel >= 1 )
-					printf( "Setting PostTriggerFLNK: %s = %s\n",
-							 tsBldPostSubFLNK.c_str(), 
-							_sBldPvPostTriggerPrevFLNK.c_str() );
-				if ( writePv(	 tsBldPostSubFLNK.c_str(), 
-								_sBldPvPostTriggerPrevFLNK.c_str() ) != 0 )
-					throw string("writePv(") + tsBldPostSubFLNK + ") Failed\n";    
-			}
+				// Set PV: (_sBldPvPostSubRec).FLNK = (_sBldPvPostTrigger).FLNK
+				if ( _sBldPvPostTriggerPrevFLNK == "0" ) // special case: "0" means NO FLNK
+					_sBldPvPostTriggerPrevFLNK.clear();
+				else if ( !_sBldPvPostTriggerPrevFLNK.empty() )
+				{
+					string tsBldPostSubFLNK = _sBldPvPostSubRec + ".FLNK";
+					if ( _iDebugLevel >= 1 )
+						printf( "Setting PostTriggerFLNK: %s = %s\n",
+								 tsBldPostSubFLNK.c_str(), 
+								_sBldPvPostTriggerPrevFLNK.c_str() );
+					if ( writePv(	tsBldPostSubFLNK.c_str(),
+									_sBldPvPostTriggerPrevFLNK.c_str() ) != 0 )
+						throw string("writePv(") + tsBldPostSubFLNK + ") Failed\n";    
+				}
 
-			// Set PV: (_sBldPvPostTrigger).FLNK = _sBldPvPostSubRec
-			if ( _iDebugLevel >= 1 )
-				printf( 	"Setting PostTriggerFLNK: %s = %s\n",
-							 tsPvPostTriggerFLNK.c_str(), 
-							_sBldPvPostSubRec.c_str() );
-			if ( writePv(	 tsPvPostTriggerFLNK.c_str(), 
-							_sBldPvPostSubRec.c_str() ) != 0 )
-				throw string("writePv(") + tsPvPostTriggerFLNK + ") Failed\n";            
+				// Set PV: (_sBldPvPostTrigger).FLNK = _sBldPvPostSubRec
+				if ( _iDebugLevel >= 1 )
+					printf(		"Setting PostTriggerFLNK: %s = %s\n",
+								tsPvPostTriggerFLNK.c_str(), 
+								_sBldPvPostSubRec.c_str() );
+				if ( writePv(	 tsPvPostTriggerFLNK.c_str(),
+								_sBldPvPostSubRec.c_str() ) != 0 )
+					throw string("writePv(") + tsPvPostTriggerFLNK + ") Failed\n";            
+			}
 		}    
 
 	}   
@@ -441,20 +447,20 @@ int BldPvClientBasic::bldStop()
 			if ( _iDebugLevel >= 1 )
 				printf( 	"Setting PreTrigger.FLNK: %s = %s\n",
 							tsBldPvPreTriggerFLNK.c_str(), 
-				  			_sBldPvPreTriggerPrevFLNK.c_str() );
+							_sBldPvPreTriggerPrevFLNK.c_str() );
 			if ( writePv(	tsBldPvPreTriggerFLNK.c_str(),
-				  			_sBldPvPreTriggerPrevFLNK.c_str() ) != 0 )
+							_sBldPvPreTriggerPrevFLNK.c_str() ) != 0 )
 				throw string("writePv(") + tsBldPvPreTriggerFLNK + ") Failed\n";
 				
 			if ( !_sBldPvPreTriggerPrevFLNK.empty() )
 			{
 				string tsBldPreSubFLNK = _sBldPvPreSubRec + ".FLNK";
 				if ( _iDebugLevel >= 1 )
-					printf( "Setting BldPreSub.FLNK:  %s = 0\n", tsBldPreSubFLNK.c_str() );            
+					printf( "Setting BldPreSub.FLNK:  %s = 0\n", tsBldPreSubFLNK.c_str() );
 				char* lcBufPvVal = (char*) llBufPvVal;
 				lcBufPvVal[0] = 0; // set lcBufPvVal = ""
 				if ( writePv( tsBldPreSubFLNK.c_str(), lcBufPvVal ) != 0 )
-					throw string("writePv(") + tsBldPreSubFLNK + ") Failed\n";                        
+					throw string("writePv(") + tsBldPreSubFLNK + ") Failed\n";
 			}
 		}    
 
