@@ -92,6 +92,8 @@ int BldNetworkClientSendRawData(void* pVoidBldNetworkClient, int iSizeData, char
     return pBldNetworkClient->sendRawData(iSizeData, pData);
 }
 
+
+
 } // extern "C" 
 
 using std::string;
@@ -115,7 +117,8 @@ public:
     BldNetworkClientSlim(unsigned int uAddr, unsigned short uPort, unsigned int uMaxDataSize,
       unsigned char ucTTL = 32, unsigned int uInteraceIp = 0);
     virtual ~BldNetworkClientSlim();
-    
+    virtual int setPort(unsigned short uPort);
+    virtual int setAddr(unsigned int uAddr);
     virtual int sendRawData(int iSizeData, const char* pData);
     
     // debug information control
@@ -294,6 +297,20 @@ int BldNetworkClientSlim::getDebugLevel()
     return _iDebugLevel;
 }
 
+int BldNetworkClientSlim::setPort(unsigned short uPort)
+{
+  _uPort = uPort;
+  return  0;
+}
+
+
+int BldNetworkClientSlim::setAddr(unsigned int uAddr)
+{
+  _uAddr = uAddr;
+  return  0;
+}
+
+
 int BldNetworkClientSlim::sendRawData(int iSizeData, const char* pData)
 {
     int iRetErrorCode = 0;
@@ -359,3 +376,30 @@ string BldNetworkClientSlim::addressToStr( unsigned int uAddr )
 }
 
 } // namespace EpicsBld
+
+extern "C"
+{
+
+
+int BldNetworkClientSetPort(unsigned short uPort, void* pVoidBldNetworkClient)
+{
+    if ( pVoidBldNetworkClient == NULL )
+        return -1;
+
+    EpicsBld::BldNetworkClientSlim* pBldNetworkClient = 
+      reinterpret_cast<EpicsBld::BldNetworkClientSlim*>(pVoidBldNetworkClient);      
+
+    return pBldNetworkClient->setPort(uPort);  
+}
+
+int BldNetworkClientSetAddr(unsigned int uAddr, void* pVoidBldNetworkClient)
+{
+    if ( pVoidBldNetworkClient == NULL )
+        return -1;
+
+    EpicsBld::BldNetworkClientSlim* pBldNetworkClient = 
+      reinterpret_cast<EpicsBld::BldNetworkClientSlim*>(pVoidBldNetworkClient);      
+
+    return pBldNetworkClient->setAddr(uAddr);  
+}
+}

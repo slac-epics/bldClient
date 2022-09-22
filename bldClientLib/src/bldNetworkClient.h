@@ -96,6 +96,24 @@ int BldNetworkClientInitByInterfaceAddress(unsigned int uAddr, unsigned short uP
   void** ppVoidBldNetworkClient);  
 
 /**
+ * @brief Updates the BLD port
+ * 
+ * @param uPort Port
+ * @param ppVoidBldNetworkClient : pointer to context
+ * @return int 
+ */
+int BldNetworkClientSetPort(unsigned short uPort, void* pVoidBldNetworkClient);  
+
+/**
+ * @brief Updates the BLD destination IP
+ * 
+ * @param uAddr IP address
+ * @param ppVoidBldNetworkClient : pointer to context
+ * @return int 
+ */
+int BldNetworkClientSetAddr(unsigned int uAddr, void* pVoidBldNetworkClient); 
+
+/**
  * Release function: Call C++ delete operator to delete the BldNetworkClient
  */
 int BldNetworkClientRelease(void* pVoidBldNetworkClient); 
